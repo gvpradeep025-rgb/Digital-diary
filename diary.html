@@ -904,11 +904,14 @@ body::before {
 .mood-select .mood-btn {
   background: none;
   border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  padding: 2px 8px;
-  line-height: 1.4;
+  font-size: 17px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s;
 }
 .mood-select .mood-btn:hover { border-color: #cc0000; }
@@ -916,30 +919,71 @@ body::before {
 .mood-select .mood-picker {
   position: absolute;
   top: 100%;
-  left: 0;
-  margin-top: 4px;
-  background: #fff;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  background: #f5f0e8;
   border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
   display: none;
+  flex-wrap: nowrap;
   z-index: 10;
-  padding: 4px;
+  padding: 5px;
   gap: 2px;
 }
 .mood-select .mood-picker.open { display: flex; }
 
 .mood-select .mood-picker button {
   background: none;
-  border: none;
+  border: 2px solid transparent;
   cursor: pointer;
-  font-size: 16px;
-  padding: 4px 6px;
-  border-radius: 3px;
-  transition: background 0.15s;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  flex-shrink: 0;
 }
-.mood-select .mood-picker button:hover { background: rgba(204,0,0,0.08); }
-.mood-select .mood-picker button.selected { background: rgba(204,0,0,0.12); }
+
+.mood-select .mood-picker button:hover {
+  background: rgba(204,0,0,0.06);
+  transform: scale(1.18);
+}
+
+.mood-select .mood-picker button.selected {
+  border-color: #cc0000;
+  background: rgba(204,0,0,0.1);
+  box-shadow: 0 0 8px rgba(204,0,0,0.2);
+}
+
+.mood-select .mood-picker button::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: #222;
+  color: #fff;
+  font-family: 'Special Elite', monospace;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.15s ease;
+}
+
+.mood-select .mood-picker button:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
 
 /* FIGHT CARD */
 .fight-card {
@@ -1783,12 +1827,12 @@ body::before {
           <div class="mood-select">
             <button class="mood-btn" id="moodBtn">&#x1F610;</button>
             <div class="mood-picker" id="moodPicker">
-              <button data-mood="&#x1F620;">&#x1F620;</button>
-              <button data-mood="&#x1F61E;">&#x1F61E;</button>
-              <button data-mood="&#x1F610;">&#x1F610;</button>
-              <button data-mood="&#x1F642;">&#x1F642;</button>
-              <button data-mood="&#x1F929;">&#x1F929;</button>
-              <button data-mood="&#x1F525;">&#x1F525;</button>
+              <button data-mood="&#x1F620;" data-label="Angry">&#x1F620;</button>
+              <button data-mood="&#x1F61E;" data-label="Sad">&#x1F61E;</button>
+              <button data-mood="&#x1F610;" data-label="Neutral">&#x1F610;</button>
+              <button data-mood="&#x1F642;" data-label="Happy">&#x1F642;</button>
+              <button data-mood="&#x1F929;" data-label="Excited">&#x1F929;</button>
+              <button data-mood="&#x1F525;" data-label="Fired Up">&#x1F525;</button>
             </div>
           </div>
         </div>
@@ -2157,6 +2201,8 @@ body::before {
   moodPicker.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
+    moodPicker.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
     currentMood = btn.dataset.mood;
     moodBtn.textContent = currentMood;
     moodPicker.classList.remove('open');
@@ -2250,6 +2296,9 @@ body::before {
       entryContent.value = e.content;
       currentMood = e.mood || '\u{1F610}';
       moodBtn.textContent = currentMood;
+      moodPicker.querySelectorAll('button').forEach(b => {
+        b.classList.toggle('selected', b.dataset.mood === currentMood);
+      });
       charCount.textContent = e.charCount + ' chars';
       delBtn.style.display = '';
     }
@@ -2351,6 +2400,7 @@ body::before {
     entryTitle.value = '';
     entryContent.value = '';
     moodBtn.textContent = currentMood;
+    moodPicker.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
     charCount.textContent = '0 chars';
     isDirty = false;
     unsavedDot.classList.remove('dirty');
