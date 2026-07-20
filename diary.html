@@ -1603,6 +1603,16 @@ body::before {
   box-shadow: 0 0 16px rgba(204,0,0,0.3);
 }
 
+.music-folder-note {
+  font-family: 'Special Elite', monospace;
+  font-size: 9px;
+  color: #aaa;
+  line-height: 1.5;
+  font-style: italic;
+  padding: 0 2px;
+  text-align: center;
+}
+
 /* ─── Manage Library ─── */
 
 .music-manage {
@@ -1965,6 +1975,8 @@ body::before {
           <span class="music-folder-path" id="musicFolderPath"></span>
         </div>
         <button class="music-folder-btn" id="musicChooseFolder">&#x1F4C2; Choose Music Folder</button>
+        <div class="music-folder-note" id="musicFolderNote" style="display:none;"></div>
+        <input type="file" id="musicFileFallback" accept="audio/*" multiple style="display:none">
       </div>
 
       <!-- MANAGE LIBRARY -->
@@ -2552,7 +2564,7 @@ body::before {
   entryContent.addEventListener('click', () => { try { getAudioCtx().resume(); } catch {} });
 
   /* ═══════════════════════════════════════════
-     MUSIC PLAYER — Desktop Music Library
+     MUSIC PLAYER — Cross-Environment Library
      ═══════════════════════════════════════════ */
 
   const SUGGESTED_TRACKS = ['Silent Eyes', 'Motherhood', 'Irradiation'];
@@ -2563,9 +2575,11 @@ body::before {
   const MUSIC_META_KEY = 'fighter_music_meta_v1';
   const AUDIO_EXTS = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'];
 
+  /* ─── Environment Detection ─── */
   const isElectron = !!(window.process && window.process.versions && window.process.versions.electron);
   const isTauri = !!(window.__TAURI__);
   const hasDirectoryPicker = typeof window.showDirectoryPicker === 'function';
+  const canUseFolder = hasDirectoryPicker || isElectron || isTauri;
 
   let musicDB = null;
   let musicLibrary = [];
@@ -2574,6 +2588,7 @@ body::before {
   let musicAudio = null;
   let musicProgressInterval = null;
   let folderHandle = null;
+  let folderMode = 'none'; /* 'folder' | 'files' | 'none' */
 
   const musicProgressWrap = $('musicProgressWrap');
   const musicControls = $('musicControls');
@@ -2587,6 +2602,8 @@ body::before {
   const musicChooseFolder = $('musicChooseFolder');
   const musicFolderInfo = $('musicFolderInfo');
   const musicFolderPath = $('musicFolderPath');
+  const musicFolderNote = $('musicFolderNote');
+  const musicFileFallback = $('musicFileFallback');
   const suggestedTracksList = $('suggestedTracksList');
 
   /* ─── IndexedDB ─── */
@@ -2717,22 +2734,62 @@ body::before {
     const existingMap = new Map(musicLibrary.map(t => [t.id, t]));
     const newMap = new Map(scannedTracks.map(t => [t.id, t]));
 
-    /* Add new tracks */
     for (const track of scannedTracks) {
       if (!existingMap.has(track.id)) {
         musicLibrary.push(track);
       } else {
-        /* Update blob from fresh scan */
         const existing = existingMap.get(track.id);
         existing.blob = track.blob;
         existing.missing = false;
       }
     }
 
-    /* Remove tracks no longer in folder */
     musicLibrary = musicLibrary.filter(t => newMap.has(t.id));
+    musicLibrary.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }
+
+  /* ─── File Fallback (non-Chromium browsers) ─── */
+
+  async function importFilesFallback(files) {
+    for (const file of files) {
+      if (!file.type.startsWith('audio/')) continue;
+      const ext = '.' + file.name.split('.').pop().toLowerCase();
+      if (!AUDIO_EXTS.includes(ext)) continue;
+      const id = 'track_' + file.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + file.size;
+      const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+      const track = {
+        id: id,
+        name: file.name.replace(/\.[^.]+$/, ''),
+        fileName: file.name,
+        type: file.type,
+        size: file.size,
+        blob: blob,
+        missing: false
+      };
+
+      const existing = musicLibrary.find(t => t.id === id);
+      if (existing) {
+        existing.blob = blob;
+        existing.missing = false;
+      } else {
+        musicLibrary.push(track);
+      }
+    }
 
     musicLibrary.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    await dbClearStore(MUSIC_STORE);
+    for (const track of musicLibrary) {
+      await dbPut(MUSIC_STORE, track);
+    }
+
+    renderPlaylist();
+    updateSuggestedTracks();
+    updatePlayerUI();
+
+    if (currentTrackIndex === -1 && musicLibrary.length > 0) {
+      playTrackAtIndex(0);
+    }
   }
 
   /* ─── Library Load ─── */
@@ -2742,19 +2799,24 @@ body::before {
     musicLibrary = savedTracks;
     musicLibrary.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-    /* Try to restore folder handle and rescan */
-    folderHandle = await loadFolderHandle();
-    if (folderHandle) {
-      updateFolderUI(true);
-      const scanned = await scanFolder(folderHandle);
-      await syncLibrary(scanned);
-
-      /* Persist updated library */
-      await dbClearStore(MUSIC_STORE);
-      for (const track of musicLibrary) {
-        await dbPut(MUSIC_STORE, track);
+    /* Determine folder mode */
+    if (canUseFolder) {
+      folderHandle = await loadFolderHandle();
+      if (folderHandle) {
+        folderMode = 'folder';
+        updateFolderUI(true);
+        const scanned = await scanFolder(folderHandle);
+        await syncLibrary(scanned);
+        await dbClearStore(MUSIC_STORE);
+        for (const track of musicLibrary) {
+          await dbPut(MUSIC_STORE, track);
+        }
+      } else {
+        folderMode = 'none';
+        updateFolderUI(false);
       }
     } else {
+      folderMode = 'files';
       updateFolderUI(false);
     }
 
@@ -2787,28 +2849,42 @@ body::before {
       musicFolderInfo.style.display = 'flex';
       musicFolderPath.textContent = folderHandle.name;
       musicChooseFolder.textContent = '\u{1F4C2} Change Folder';
+      musicFolderNote.style.display = 'none';
+      musicRefreshLib.style.display = '';
+    } else if (folderMode === 'files') {
+      musicFolderInfo.style.display = 'none';
+      musicChooseFolder.textContent = '\u{1F3B5} Choose Music Files';
+      musicFolderNote.style.display = 'block';
+      musicFolderNote.textContent = 'Automatic folder scanning is not available in this browser. Select audio files manually each time.';
+      musicRefreshLib.style.display = 'none';
     } else {
       musicFolderInfo.style.display = 'none';
-      musicChooseFolder.textContent = '\u{1F4C2} Choose Music Folder';
+      musicChooseFolder.textContent = canUseFolder ? '\u{1F4C2} Choose Music Folder' : '\u{1F3B5} Choose Music Files';
+      musicFolderNote.style.display = 'none';
+      musicRefreshLib.style.display = canUseFolder ? '' : 'none';
     }
   }
 
-  /* ─── Folder Picker ─── */
+  /* ─── Folder / File Picker ─── */
 
   async function chooseFolder() {
     if (hasDirectoryPicker) {
       try {
         const handle = await window.showDirectoryPicker({ mode: 'read' });
         folderHandle = handle;
+        folderMode = 'folder';
         await saveFolderHandle(handle);
         updateFolderUI(true);
         await rescanFolder();
       } catch (err) {
         if (err.name !== 'AbortError') console.error('Folder picker error:', err);
       }
+    } else if (isElectron || isTauri) {
+      /* Electron/Tauri: use IPC to pick folder (placeholder for native integration) */
+      alert('Desktop folder selection will be available when packaged with Electron or Tauri.');
     } else {
-      /* Fallback: Electron/Tauri or browsers without Directory Picker */
-      alert('Please use a Chromium-based browser (Chrome, Edge) for automatic folder scanning, or use the Electron/Tauri version of Fighter\'s Log.');
+      /* Fallback: file selection */
+      musicFileFallback.click();
     }
   }
 
@@ -2817,7 +2893,6 @@ body::before {
     const scanned = await scanFolder(folderHandle);
     await syncLibrary(scanned);
 
-    /* Persist */
     await dbClearStore(MUSIC_STORE);
     for (const track of musicLibrary) {
       await dbPut(MUSIC_STORE, track);
@@ -2862,18 +2937,22 @@ body::before {
       musicNext.disabled = true;
       musicTitle.textContent = 'No Track Selected';
       musicTitle.classList.add('is-empty');
-      musicArtist.textContent = folderHandle ? 'No audio files found in this folder.' : 'Choose a music folder to begin.';
+      if (folderMode === 'files') {
+        musicArtist.textContent = 'Select audio files to begin.';
+      } else {
+        musicArtist.textContent = folderHandle ? 'No audio files found in this folder.' : 'Choose a music folder to begin.';
+      }
       musicArtist.classList.add('is-empty');
-      musicPlayPause.innerHTML = '\u2B50 ' + (folderHandle ? 'Rescan' : 'Choose Folder');
+      musicPlayPause.innerHTML = '\u2B50 ' + (folderMode === 'files' ? 'Choose Files' : (folderHandle ? 'Rescan' : 'Choose Folder'));
       musicPlayPause.classList.remove('is-playing');
-      musicPlayPause.title = folderHandle ? 'Rescan Folder' : 'Choose Music Folder';
+      musicPlayPause.title = folderMode === 'files' ? 'Choose Music Files' : (folderHandle ? 'Rescan Folder' : 'Choose Music Folder');
       musicProgressFill.style.width = '0%';
       musicCurrentTime.textContent = '0:00';
       musicDuration.textContent = '0:00';
     }
 
     musicPlaylistSection.style.display = hasTracks ? '' : 'none';
-    musicManage.style.display = hasTracks || folderHandle ? '' : 'none';
+    musicManage.style.display = (hasTracks || folderHandle) ? '' : 'none';
   }
 
   function renderPlaylist() {
@@ -2999,8 +3078,8 @@ body::before {
 
   function togglePlayPause() {
     if (musicLibrary.length === 0) {
-      if (folderHandle) {
-        rescanFolder();
+      if (folderMode === 'files') {
+        musicFileFallback.click();
       } else {
         chooseFolder();
       }
@@ -3093,6 +3172,11 @@ body::before {
   musicChooseFolder.addEventListener('click', chooseFolder);
   musicRefreshLib.addEventListener('click', rescanFolder);
 
+  musicFileFallback.addEventListener('change', e => {
+    if (e.target.files.length > 0) importFilesFallback(e.target.files);
+    e.target.value = '';
+  });
+
   musicManageClear.addEventListener('click', async () => {
     if (musicLibrary.length === 0 && !folderHandle) return;
     if (!confirm('Clear entire music library and folder setting? This cannot be undone.')) return;
@@ -3100,6 +3184,7 @@ body::before {
     await dbClearStore(MUSIC_STORE);
     await removeFolderHandle();
     folderHandle = null;
+    folderMode = canUseFolder ? 'none' : 'files';
     musicLibrary = [];
     currentTrackIndex = -1;
     saveMusicMeta({ lastTrackIndex: -1, lastPosition: 0, lastVolume: musicVolume.value });
