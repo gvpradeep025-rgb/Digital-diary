@@ -1186,12 +1186,18 @@ body::before {
   border: 3px solid #cc0000;
   border-radius: 10px;
   padding: 0;
-  max-width: 360px;
-  width: 90%;
+  max-width: 380px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: 0 16px 50px rgba(0,0,0,0.4), 0 0 30px rgba(204,0,0,0.12);
   overflow: hidden;
   animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+.music-player::-webkit-scrollbar { width: 5px; }
+.music-player::-webkit-scrollbar-track { background: transparent; }
+.music-player::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 3px; }
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
@@ -1205,6 +1211,9 @@ body::before {
   align-items: center;
   justify-content: space-between;
   border-bottom: 2px solid #cc0000;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .music-player-header h3 {
@@ -1250,10 +1259,16 @@ body::before {
 
 .music-now-playing-title {
   font-family: 'Caveat', cursive;
-  font-size: 20px;
+  font-size: 22px;
   color: #222;
   font-weight: 700;
   line-height: 1.2;
+}
+
+.music-now-playing-title.is-empty {
+  font-size: 18px;
+  color: #999;
+  font-style: italic;
 }
 
 .music-now-playing-artist {
@@ -1263,9 +1278,17 @@ body::before {
   margin-top: 2px;
 }
 
+.music-now-playing-artist.is-empty {
+  color: #bbb;
+  font-size: 10px;
+}
+
 .music-progress-wrap {
   margin-bottom: 14px;
+  transition: opacity 0.2s;
 }
+
+.music-progress-wrap.disabled { opacity: 0.3; pointer-events: none; }
 
 .music-progress-bar {
   width: 100%;
@@ -1306,6 +1329,8 @@ body::before {
   margin-bottom: 16px;
 }
 
+.music-controls.disabled .music-ctrl-btn { opacity: 0.3; pointer-events: none; }
+
 .music-ctrl-btn {
   background: none;
   border: 2px solid #222;
@@ -1320,23 +1345,33 @@ body::before {
   font-size: 14px;
   transition: all 0.2s;
 }
-.music-ctrl-btn:hover { background: #222; color: #f5f0e8; }
+.music-ctrl-btn:hover:not(:disabled) { background: #222; color: #f5f0e8; }
+.music-ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .music-play-btn {
-  width: 48px;
-  height: 48px;
+  width: auto;
+  min-width: 100px;
+  height: 40px;
   background: #cc0000;
   border-color: #cc0000;
   color: #fff;
-  font-size: 18px;
+  font-size: 12px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1.5px;
+  padding: 0 16px;
+  border-radius: 6px;
 }
-.music-play-btn:hover { background: #990000; border-color: #990000; }
+.music-play-btn:hover { background: #990000; border-color: #990000; transform: scale(1.03); }
+.music-play-btn.is-playing { min-width: 48px; width: 48px; font-size: 18px; border-radius: 50%; padding: 0; }
 
 .music-volume-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: opacity 0.2s;
 }
+
+.music-volume-wrap.disabled { opacity: 0.3; pointer-events: none; }
 
 .music-volume-icon { font-size: 13px; color: #666; flex-shrink: 0; }
 
@@ -1374,6 +1409,186 @@ body::before {
   cursor: pointer;
   border: none;
 }
+
+/* ─── Playlist ─── */
+
+.music-playlist-section { margin-top: 0; }
+
+.music-playlist-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 20%, rgba(204,0,0,0.15) 50%, rgba(0,0,0,0.1) 80%, transparent 100%);
+  margin: 14px 0;
+}
+
+.music-playlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.music-playlist-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  color: #222;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+.music-playlist-count {
+  font-family: 'Special Elite', monospace;
+  font-size: 9px;
+  color: #999;
+}
+
+.music-playlist {
+  list-style: none;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.015);
+}
+
+.music-playlist::-webkit-scrollbar { width: 4px; }
+.music-playlist::-webkit-scrollbar-track { background: transparent; }
+.music-playlist::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 2px; }
+
+.music-playlist-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.music-playlist-item:last-child { border-bottom: none; }
+
+.music-playlist-item:hover { background: rgba(204,0,0,0.04); }
+
+.music-playlist-item.active {
+  background: rgba(204,0,0,0.08);
+  border-left: 3px solid #cc0000;
+}
+
+.music-playlist-item.missing {
+  opacity: 0.45;
+  font-style: italic;
+}
+
+.music-playlist-item-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  color: #bbb;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.music-playlist-item.active .music-playlist-item-num { color: #cc0000; }
+
+.music-playlist-item-title {
+  font-family: 'Special Elite', monospace;
+  font-size: 11px;
+  color: #444;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-playlist-item.active .music-playlist-item-title { color: #222; font-weight: bold; }
+
+.music-playlist-item-remove {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px;
+  line-height: 1;
+  opacity: 0;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.music-playlist-item:hover .music-playlist-item-remove { opacity: 1; }
+.music-playlist-item-remove:hover { color: #cc0000; }
+
+/* ─── Import Zone ─── */
+
+.music-import-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 20%, rgba(204,0,0,0.15) 50%, rgba(0,0,0,0.1) 80%, transparent 100%);
+  margin: 16px 0 12px;
+}
+
+.music-import-zone {
+  border: 2px dashed rgba(204,0,0,0.25);
+  border-radius: 6px;
+  background: rgba(204,0,0,0.015);
+  transition: all 0.25s ease;
+}
+
+.music-import-zone:hover {
+  border-color: #cc0000;
+  background: rgba(204,0,0,0.04);
+}
+
+.music-import-zone.drag-over {
+  border-color: #cc0000;
+  background: rgba(204,0,0,0.08);
+  box-shadow: inset 0 0 20px rgba(204,0,0,0.06);
+}
+
+.music-import-zone-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  cursor: pointer;
+  gap: 6px;
+}
+
+.music-import-icon { font-size: 22px; }
+
+.music-import-text {
+  font-family: 'Special Elite', monospace;
+  font-size: 10px;
+  color: #999;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Manage Library ─── */
+
+.music-manage {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.music-manage-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  padding: 6px 14px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.music-manage-btn:hover { border-color: #cc0000; color: #cc0000; }
+
+.music-manage-danger:hover { background: #cc0000; color: #fff; border-color: #cc0000; }
 
 /* ─── Suggested Tracks ─── */
 
@@ -1433,9 +1648,14 @@ body::before {
 }
 
 .suggested-track-dot {
-  font-size: 5px;
+  font-size: 11px;
   color: #cc0000;
   line-height: 1;
+  transition: all 0.2s;
+}
+
+.suggested-track-dot.matched {
+  color: #2e7d32;
 }
 
 .suggested-track-name {
@@ -1492,7 +1712,8 @@ body::before {
   .editor input[type="text"] { min-width: 80px; }
   .btn { padding: 10px 16px; font-size: 13px; }
   .toolbar { gap: 6px; }
-  .music-player { max-width: 320px; }
+  .music-player { max-width: 340px; }
+  .music-playlist { max-height: 120px; }
 }
 
 @media (max-width: 400px) {
@@ -1655,12 +1876,15 @@ body::before {
       <button class="music-player-close" id="musicClose">&times;</button>
     </div>
     <div class="music-player-body">
-      <div class="music-now-playing">
+      <!-- NOW PLAYING -->
+      <div class="music-now-playing" id="musicNowPlaying">
         <div class="music-now-playing-label">Now Playing</div>
-        <div class="music-now-playing-title" id="musicTitle">Under Pressure</div>
-        <div class="music-now-playing-artist" id="musicArtist">Hajime no Ippo OST</div>
+        <div class="music-now-playing-title" id="musicTitle">No Track Selected</div>
+        <div class="music-now-playing-artist" id="musicArtist">Import your music to begin.</div>
       </div>
-      <div class="music-progress-wrap">
+
+      <!-- PROGRESS -->
+      <div class="music-progress-wrap" id="musicProgressWrap">
         <div class="music-progress-bar" id="musicProgressBar">
           <div class="music-progress-fill" id="musicProgressFill"></div>
         </div>
@@ -1669,32 +1893,64 @@ body::before {
           <span id="musicDuration">0:00</span>
         </div>
       </div>
-      <div class="music-controls">
-        <button class="music-ctrl-btn" id="musicPrev" title="Previous">&#x23EE;</button>
-        <button class="music-ctrl-btn music-play-btn" id="musicPlayPause" title="Play">&#x25B6;</button>
-        <button class="music-ctrl-btn" id="musicNext" title="Next">&#x23ED;</button>
+
+      <!-- CONTROLS -->
+      <div class="music-controls" id="musicControls">
+        <button class="music-ctrl-btn" id="musicPrev" title="Previous" disabled>&#x23EE;</button>
+        <button class="music-ctrl-btn music-play-btn" id="musicPlayPause" title="Import Music">&#x2B50; Import</button>
+        <button class="music-ctrl-btn" id="musicNext" title="Next" disabled>&#x23ED;</button>
       </div>
-      <div class="music-volume-wrap">
+
+      <!-- VOLUME -->
+      <div class="music-volume-wrap" id="musicVolumeWrap">
         <span class="music-volume-icon">&#x1F509;</span>
-        <input type="range" class="music-volume-slider" id="musicVolume" min="0" max="100" value="70">
+        <input type="range" class="music-volume-slider" id="musicVolume" min="0" max="100" value="70" disabled>
       </div>
+
+      <!-- PLAYLIST -->
+      <div class="music-playlist-section" id="musicPlaylistSection" style="display:none;">
+        <div class="music-playlist-divider"></div>
+        <div class="music-playlist-header">
+          <span class="music-playlist-label">Playlist</span>
+          <span class="music-playlist-count" id="musicPlaylistCount"></span>
+        </div>
+        <ul class="music-playlist" id="musicPlaylist"></ul>
+      </div>
+
+      <!-- IMPORT ZONE -->
+      <div class="music-import-divider" id="musicImportDivider"></div>
+      <div class="music-import-zone" id="musicImportZone">
+        <input type="file" id="musicFileInput" accept="audio/*" multiple style="display:none">
+        <div class="music-import-zone-inner" id="musicImportZoneInner">
+          <span class="music-import-icon">&#x1F4E5;</span>
+          <span class="music-import-text" id="musicImportText">Drop MP3/WAV files here or click to import</span>
+        </div>
+      </div>
+
+      <!-- MANAGE LIBRARY -->
+      <div class="music-manage" id="musicManage" style="display:none;">
+        <button class="music-manage-btn" id="musicManageAdd">&#x2795; Add More</button>
+        <button class="music-manage-btn music-manage-danger" id="musicManageClear">&#x1F5D1; Clear All</button>
+      </div>
+
+      <!-- SUGGESTED TRACKS -->
       <div class="suggested-tracks">
         <div class="suggested-tracks-divider"></div>
         <div class="suggested-tracks-header">
           <span class="suggested-tracks-icon">&#x2B50;</span>
           <span class="suggested-tracks-label">Suggested Tracks</span>
         </div>
-        <ul class="suggested-tracks-list">
+        <ul class="suggested-tracks-list" id="suggestedTracksList">
           <li class="suggested-track-item">
-            <span class="suggested-track-dot">&#x25CF;</span>
+            <span class="suggested-track-dot" data-track="Silent Eyes">&#x25CB;</span>
             <span class="suggested-track-name">Silent Eyes</span>
           </li>
           <li class="suggested-track-item">
-            <span class="suggested-track-dot">&#x25CF;</span>
+            <span class="suggested-track-dot" data-track="Motherhood">&#x25CB;</span>
             <span class="suggested-track-name">Motherhood</span>
           </li>
           <li class="suggested-track-item">
-            <span class="suggested-track-dot">&#x25CF;</span>
+            <span class="suggested-track-dot" data-track="Irradiation">&#x25CB;</span>
             <span class="suggested-track-name">Irradiation</span>
           </li>
         </ul>
@@ -2253,88 +2509,442 @@ body::before {
      MUSIC PLAYER
      ═══════════════════════════════════════════ */
 
-  const playlist = [
-    { title: 'Under Pressure', artist: 'Hajime no Ippo OST' },
-    { title: 'Hokuto no Ken Theme', artist: 'Fist of the North Star' },
-    { title: 'Guts Theme', artist: 'Berserk OST' },
-    { title: 'Unravel', artist: 'Tokyo Ghoul' },
-    { title: 'THE HERO!!', artist: 'One Punch Man OST' }
-  ];
+  const SUGGESTED_TRACKS = ['Silent Eyes', 'Motherhood', 'Irradiation'];
+  const MUSIC_DB_NAME = 'FighterLogMusicDB';
+  const MUSIC_DB_VERSION = 1;
+  const MUSIC_STORE = 'tracks';
+  const MUSIC_META_KEY = 'fighter_music_meta_v1';
 
-  let currentTrack = 0;
+  let musicDB = null;
+  let musicLibrary = [];
+  let currentTrackIndex = -1;
   let isPlaying = false;
   let musicAudio = null;
   let musicProgressInterval = null;
 
-  function updateTrackDisplay() {
-    musicTitle.textContent = playlist[currentTrack].title;
-    musicArtist.textContent = playlist[currentTrack].artist;
+  const musicProgressWrap = $('musicProgressWrap');
+  const musicControls = $('musicControls');
+  const musicVolumeWrap = $('musicVolumeWrap');
+  const musicPlaylistSection = $('musicPlaylistSection');
+  const musicPlaylist = $('musicPlaylist');
+  const musicPlaylistCount = $('musicPlaylistCount');
+  const musicImportZone = $('musicImportZone');
+  const musicImportZoneInner = $('musicImportZoneInner');
+  const musicFileInput = $('musicFileInput');
+  const musicImportText = $('musicImportText');
+  const musicManage = $('musicManage');
+  const musicManageAdd = $('musicManageAdd');
+  const musicManageClear = $('musicManageClear');
+  const suggestedTracksList = $('suggestedTracksList');
+
+  function openIndexedDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(MUSIC_DB_NAME, MUSIC_DB_VERSION);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(MUSIC_STORE)) {
+          db.createObjectStore(MUSIC_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = e => { musicDB = e.target.result; resolve(musicDB); };
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbPut(track) {
+    return new Promise((resolve, reject) => {
+      const tx = musicDB.transaction(MUSIC_STORE, 'readwrite');
+      tx.objectStore(MUSIC_STORE).put(track);
+      tx.oncomplete = () => resolve();
+      tx.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbGetAll() {
+    return new Promise((resolve, reject) => {
+      const tx = musicDB.transaction(MUSIC_STORE, 'readonly');
+      const req = tx.objectStore(MUSIC_STORE).getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbDelete(id) {
+    return new Promise((resolve, reject) => {
+      const tx = musicDB.transaction(MUSIC_STORE, 'readwrite');
+      tx.objectStore(MUSIC_STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbClear() {
+    return new Promise((resolve, reject) => {
+      const tx = musicDB.transaction(MUSIC_STORE, 'readwrite');
+      tx.objectStore(MUSIC_STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function getMusicMeta() {
+    try { return JSON.parse(localStorage.getItem(MUSIC_META_KEY)) || {}; } catch { return {}; }
+  }
+
+  function saveMusicMeta(meta) {
+    localStorage.setItem(MUSIC_META_KEY, JSON.stringify(meta));
+  }
+
+  async function loadLibrary() {
+    musicLibrary = await dbGetAll();
+    musicLibrary.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+    renderPlaylist();
+    updateSuggestedTracks();
+    updatePlayerUI();
+
+    const meta = getMusicMeta();
+    if (meta.lastVolume !== undefined) {
+      musicVolume.value = meta.lastVolume;
+    }
+    if (meta.lastTrackIndex >= 0 && meta.lastTrackIndex < musicLibrary.length) {
+      currentTrackIndex = meta.lastTrackIndex;
+      loadTrack(currentTrackIndex, false);
+      if (meta.lastPosition) {
+        musicAudio.currentTime = meta.lastPosition;
+      }
+    }
+  }
+
+  function updatePlayerUI() {
+    const hasTracks = musicLibrary.length > 0;
+
+    if (hasTracks) {
+      musicProgressWrap.classList.remove('disabled');
+      musicControls.classList.remove('disabled');
+      musicVolumeWrap.classList.remove('disabled');
+      musicVolume.disabled = false;
+      musicPrev.disabled = false;
+      musicNext.disabled = false;
+
+      if (currentTrackIndex >= 0 && currentTrackIndex < musicLibrary.length) {
+        const track = musicLibrary[currentTrackIndex];
+        musicTitle.textContent = track.name;
+        musicTitle.classList.remove('is-empty');
+        musicArtist.textContent = track.missing ? 'Track not found. Please locate or re-import this file.' : 'Imported Track';
+        if (track.missing) musicArtist.classList.add('is-empty'); else musicArtist.classList.remove('is-empty');
+      }
+    } else {
+      musicProgressWrap.classList.add('disabled');
+      musicControls.classList.add('disabled');
+      musicVolumeWrap.classList.add('disabled');
+      musicVolume.disabled = true;
+      musicPrev.disabled = true;
+      musicNext.disabled = true;
+      musicTitle.textContent = 'No Track Selected';
+      musicTitle.classList.add('is-empty');
+      musicArtist.textContent = 'Import your music to begin.';
+      musicArtist.classList.add('is-empty');
+      musicPlayPause.innerHTML = '&#x2B50; Import';
+      musicPlayPause.classList.remove('is-playing');
+      musicPlayPause.title = 'Import Music';
+      musicProgressFill.style.width = '0%';
+      musicCurrentTime.textContent = '0:00';
+      musicDuration.textContent = '0:00';
+    }
+
+    musicPlaylistSection.style.display = hasTracks ? '' : 'none';
+    musicManage.style.display = hasTracks ? '' : 'none';
+  }
+
+  function renderPlaylist() {
+    musicPlaylist.innerHTML = '';
+    musicPlaylistCount.textContent = musicLibrary.length + ' track' + (musicLibrary.length !== 1 ? 's' : '');
+
+    musicLibrary.forEach((track, i) => {
+      const li = document.createElement('li');
+      li.className = 'music-playlist-item';
+      if (i === currentTrackIndex) li.classList.add('active');
+      if (track.missing) li.classList.add('missing');
+
+      const num = document.createElement('span');
+      num.className = 'music-playlist-item-num';
+      num.textContent = (i + 1);
+
+      const title = document.createElement('span');
+      title.className = 'music-playlist-item-title';
+      title.textContent = track.missing ? track.name + ' (missing)' : track.name;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'music-playlist-item-remove';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.title = 'Remove';
+      removeBtn.addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        if (i === currentTrackIndex) {
+          stopPlayback();
+          currentTrackIndex = -1;
+        } else if (i < currentTrackIndex) {
+          currentTrackIndex--;
+        }
+        await dbDelete(track.id);
+        musicLibrary.splice(i, 1);
+        saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
+        renderPlaylist();
+        updatePlayerUI();
+        updateSuggestedTracks();
+      });
+
+      li.appendChild(num);
+      li.appendChild(title);
+      li.appendChild(removeBtn);
+      li.addEventListener('click', () => playTrackAtIndex(i));
+      musicPlaylist.appendChild(li);
+    });
+  }
+
+  function updateSuggestedTracks() {
+    const lowerNames = musicLibrary.map(t => t.name.toLowerCase());
+    suggestedTracksList.querySelectorAll('.suggested-track-item').forEach(item => {
+      const dot = item.querySelector('.suggested-track-dot');
+      const trackName = dot.dataset.track;
+      const matched = lowerNames.some(n => n.includes(trackName.toLowerCase()));
+      dot.textContent = matched ? '\u2713' : '\u25CB';
+      dot.classList.toggle('matched', matched);
+    });
+  }
+
+  async function importFiles(files) {
+    for (const file of files) {
+      if (!file.type.startsWith('audio/')) continue;
+      const id = 'track_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      const blob = file;
+      const track = {
+        id: id,
+        name: file.name.replace(/\.[^.]+$/, ''),
+        type: file.type,
+        size: file.size,
+        addedAt: Date.now(),
+        blob: blob
+      };
+      await dbPut(track);
+      musicLibrary.push(track);
+    }
+
+    musicLibrary.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+    renderPlaylist();
+    updateSuggestedTracks();
+    updatePlayerUI();
+
+    if (currentTrackIndex === -1 && musicLibrary.length > 0) {
+      playTrackAtIndex(0);
+    }
+  }
+
+  function stopPlayback() {
+    if (musicAudio) {
+      musicAudio.pause();
+      musicAudio.src = '';
+      musicAudio = null;
+    }
+    isPlaying = false;
+    clearInterval(musicProgressInterval);
+    musicPlayPause.innerHTML = '&#x25B6;';
+    musicPlayPause.classList.remove('is-playing');
+    musicProgressFill.style.width = '0%';
+    musicCurrentTime.textContent = '0:00';
+  }
+
+  async function loadTrack(index, autoPlay = true) {
+    if (index < 0 || index >= musicLibrary.length) return;
+    stopPlayback();
+    currentTrackIndex = index;
+    const track = musicLibrary[index];
+
+    musicTitle.textContent = track.name;
+    musicTitle.classList.remove('is-empty');
+    musicArtist.textContent = 'Imported Track';
+    musicArtist.classList.remove('is-empty');
+
+    if (track.missing) {
+      musicArtist.textContent = 'Track not found. Please locate or re-import this file.';
+      musicArtist.classList.add('is-empty');
+      renderPlaylist();
+      saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
+      return;
+    }
+
+    try {
+      const url = URL.createObjectURL(track.blob);
+      musicAudio = new Audio(url);
+      musicAudio.volume = musicVolume.value / 100;
+
+      musicAudio.addEventListener('loadedmetadata', () => {
+        musicDuration.textContent = formatTime(musicAudio.duration);
+      });
+
+      musicAudio.addEventListener('ended', () => {
+        if (currentTrackIndex < musicLibrary.length - 1) {
+          playTrackAtIndex(currentTrackIndex + 1);
+        } else {
+          stopPlayback();
+          currentTrackIndex = 0;
+          renderPlaylist();
+          saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
+        }
+      });
+
+      musicAudio.addEventListener('error', () => {
+        track.missing = true;
+        musicArtist.textContent = 'Track not found. Please locate or re-import this file.';
+        musicArtist.classList.add('is-empty');
+        renderPlaylist();
+      });
+
+      if (autoPlay) {
+        await musicAudio.play();
+        isPlaying = true;
+        musicPlayPause.innerHTML = '&#x23F8;';
+        musicPlayPause.classList.add('is-playing');
+        musicPlayPause.title = 'Pause';
+        startProgressTracking();
+      }
+    } catch {
+      track.missing = true;
+      musicArtist.textContent = 'Track not found. Please locate or re-import this file.';
+      musicArtist.classList.add('is-empty');
+      renderPlaylist();
+    }
+
+    renderPlaylist();
+    saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
+  }
+
+  function playTrackAtIndex(index) {
+    loadTrack(index, true);
+  }
+
+  function togglePlayPause() {
+    if (musicLibrary.length === 0) {
+      musicFileInput.click();
+      return;
+    }
+    if (!musicAudio && musicLibrary.length > 0) {
+      playTrackAtIndex(currentTrackIndex >= 0 ? currentTrackIndex : 0);
+      return;
+    }
+    if (isPlaying) {
+      musicAudio.pause();
+      isPlaying = false;
+      clearInterval(musicProgressInterval);
+      musicPlayPause.innerHTML = '&#x25B6;';
+      musicPlayPause.classList.remove('is-playing');
+      musicPlayPause.title = 'Play';
+    } else {
+      musicAudio.play();
+      isPlaying = true;
+      musicPlayPause.innerHTML = '&#x23F8;';
+      musicPlayPause.classList.add('is-playing');
+      musicPlayPause.title = 'Pause';
+      startProgressTracking();
+    }
+  }
+
+  function startProgressTracking() {
+    clearInterval(musicProgressInterval);
+    musicProgressInterval = setInterval(() => {
+      if (!musicAudio || !musicAudio.duration) return;
+      const pct = (musicAudio.currentTime / musicAudio.duration) * 100;
+      musicProgressFill.style.width = pct + '%';
+      musicCurrentTime.textContent = formatTime(musicAudio.currentTime);
+      saveMusicMeta({ ...getMusicMeta(), lastPosition: musicAudio.currentTime, lastVolume: musicVolume.value });
+    }, 250);
+  }
+
+  function formatTime(sec) {
+    if (!sec || !isFinite(sec)) return '0:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function nextTrack() {
+    if (musicLibrary.length === 0) return;
+    const next = (currentTrackIndex + 1) % musicLibrary.length;
+    playTrackAtIndex(next);
+  }
+
+  function prevTrack() {
+    if (musicLibrary.length === 0) return;
+    if (musicAudio && musicAudio.currentTime > 3) {
+      musicAudio.currentTime = 0;
+      return;
+    }
+    const prev = (currentTrackIndex - 1 + musicLibrary.length) % musicLibrary.length;
+    playTrackAtIndex(prev);
   }
 
   function openMusicPlayer() {
     musicOverlay.classList.add('show');
-    updateTrackDisplay();
   }
 
   function closeMusicPlayer() {
     musicOverlay.classList.remove('show');
   }
 
-  function toggleMusicPlayPause() {
-    isPlaying = !isPlaying;
-    musicPlayPause.innerHTML = isPlaying ? '&#x23F8;' : '&#x25B6;';
-    if (isPlaying) {
-      musicProgressInterval = setInterval(() => {
-        const fill = musicProgressFill;
-        let w = parseFloat(fill.style.width) || 0;
-        if (w >= 100) { w = 0; nextTrack(); }
-        fill.style.width = (w + 0.3) + '%';
-        updateTimeDisplay(w);
-      }, 100);
-    } else {
-      clearInterval(musicProgressInterval);
-    }
-  }
-
-  function nextTrack() {
-    currentTrack = (currentTrack + 1) % playlist.length;
-    musicProgressFill.style.width = '0%';
-    updateTrackDisplay();
-    updateTimeDisplay(0);
-    if (isPlaying) { clearInterval(musicProgressInterval); toggleMusicPlayPause(); toggleMusicPlayPause(); }
-  }
-
-  function prevTrack() {
-    currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
-    musicProgressFill.style.width = '0%';
-    updateTrackDisplay();
-    updateTimeDisplay(0);
-    if (isPlaying) { clearInterval(musicProgressInterval); toggleMusicPlayPause(); toggleMusicPlayPause(); }
-  }
-
-  function updateTimeDisplay(pct) {
-    const total = 240;
-    const cur = Math.floor((pct / 100) * total);
-    const m = Math.floor(cur / 60);
-    const s = String(cur % 60).padStart(2, '0');
-    musicCurrentTime.textContent = m + ':' + s;
-    musicDuration.textContent = '4:00';
-  }
-
   musicBtn.addEventListener('click', openMusicPlayer);
   musicClose.addEventListener('click', closeMusicPlayer);
   musicOverlay.addEventListener('click', e => { if (e.target === musicOverlay) closeMusicPlayer(); });
-  musicPlayPause.addEventListener('click', toggleMusicPlayPause);
+  musicPlayPause.addEventListener('click', togglePlayPause);
   musicNext.addEventListener('click', nextTrack);
   musicPrev.addEventListener('click', prevTrack);
-  musicVolume.addEventListener('input', () => {});
+
+  musicVolume.addEventListener('input', () => {
+    if (musicAudio) musicAudio.volume = musicVolume.value / 100;
+    saveMusicMeta({ ...getMusicMeta(), lastVolume: musicVolume.value });
+  });
 
   musicProgressBar.addEventListener('click', e => {
+    if (!musicAudio || !musicAudio.duration) return;
     const rect = musicProgressBar.getBoundingClientRect();
-    const pct = ((e.clientX - rect.left) / rect.width) * 100;
-    musicProgressFill.style.width = pct + '%';
-    updateTimeDisplay(pct);
+    const pct = (e.clientX - rect.left) / rect.width;
+    musicAudio.currentTime = pct * musicAudio.duration;
   });
+
+  musicFileInput.addEventListener('change', e => {
+    if (e.target.files.length > 0) importFiles(e.target.files);
+    e.target.value = '';
+  });
+
+  musicImportZoneInner.addEventListener('click', () => musicFileInput.click());
+
+  musicImportZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    musicImportZone.classList.add('drag-over');
+  });
+  musicImportZone.addEventListener('dragleave', () => {
+    musicImportZone.classList.remove('drag-over');
+  });
+  musicImportZone.addEventListener('drop', e => {
+    e.preventDefault();
+    musicImportZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length > 0) importFiles(e.dataTransfer.files);
+  });
+
+  musicManageAdd.addEventListener('click', () => musicFileInput.click());
+  musicManageClear.addEventListener('click', async () => {
+    if (musicLibrary.length === 0) return;
+    if (!confirm('Clear entire music library? This cannot be undone.')) return;
+    stopPlayback();
+    await dbClear();
+    musicLibrary = [];
+    currentTrackIndex = -1;
+    saveMusicMeta({ lastTrackIndex: -1, lastPosition: 0, lastVolume: musicVolume.value });
+    renderPlaylist();
+    updatePlayerUI();
+    updateSuggestedTracks();
+  });
+
+  openIndexedDB().then(() => loadLibrary());
 
   /* ═══════════════════════════════════════════
      GLOVE TOGGLE
