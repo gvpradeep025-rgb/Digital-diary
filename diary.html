@@ -1375,6 +1375,85 @@ body::before {
   border: none;
 }
 
+/* ─── Suggested Tracks ─── */
+
+.suggested-tracks {
+  margin-top: 18px;
+  padding-top: 0;
+}
+
+.suggested-tracks-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 20%, rgba(204,0,0,0.15) 50%, rgba(0,0,0,0.1) 80%, transparent 100%);
+  margin-bottom: 14px;
+}
+
+.suggested-tracks-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.suggested-tracks-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.suggested-tracks-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  color: #222;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+.suggested-tracks-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.suggested-track-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: rgba(0,0,0,0.025);
+  border-radius: 4px;
+  border-left: 2px solid rgba(204,0,0,0.25);
+  transition: all 0.2s ease;
+}
+
+.suggested-track-item:hover {
+  background: rgba(204,0,0,0.04);
+  border-left-color: #cc0000;
+}
+
+.suggested-track-dot {
+  font-size: 5px;
+  color: #cc0000;
+  line-height: 1;
+}
+
+.suggested-track-name {
+  font-family: 'Special Elite', monospace;
+  font-size: 12px;
+  color: #444;
+  letter-spacing: 0.5px;
+}
+
+.suggested-tracks-note {
+  font-family: 'Special Elite', monospace;
+  font-size: 9px;
+  color: #aaa;
+  line-height: 1.5;
+  font-style: italic;
+  padding: 0 2px;
+}
+
 /* ═══════════════════════════════════════════
    SEARCH BAR
    ═══════════════════════════════════════════ */
@@ -1598,6 +1677,28 @@ body::before {
       <div class="music-volume-wrap">
         <span class="music-volume-icon">&#x1F509;</span>
         <input type="range" class="music-volume-slider" id="musicVolume" min="0" max="100" value="70">
+      </div>
+      <div class="suggested-tracks">
+        <div class="suggested-tracks-divider"></div>
+        <div class="suggested-tracks-header">
+          <span class="suggested-tracks-icon">&#x2B50;</span>
+          <span class="suggested-tracks-label">Suggested Tracks</span>
+        </div>
+        <ul class="suggested-tracks-list">
+          <li class="suggested-track-item">
+            <span class="suggested-track-dot">&#x25CF;</span>
+            <span class="suggested-track-name">Silent Eyes</span>
+          </li>
+          <li class="suggested-track-item">
+            <span class="suggested-track-dot">&#x25CF;</span>
+            <span class="suggested-track-name">Motherhood</span>
+          </li>
+          <li class="suggested-track-item">
+            <span class="suggested-track-dot">&#x25CF;</span>
+            <span class="suggested-track-name">Irradiation</span>
+          </li>
+        </ul>
+        <p class="suggested-tracks-note">These tracks are recommended to experience Fighter's Log as intended. They are not included with the project. Please import your own legally obtained copies.</p>
       </div>
     </div>
   </div>
