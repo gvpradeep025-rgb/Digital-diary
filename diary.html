@@ -21,6 +21,8 @@ body {
   padding: 40px 20px;
   font-family: 'Special Elite', monospace;
   position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body::before {
@@ -82,7 +84,7 @@ body::before {
   transition: max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1), padding 0.45s ease;
   max-height: 1000px;
   padding: 0 30px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.1);
   border-left: 3px solid #cc0000;
   border-right: 3px solid #cc0000;
 }
@@ -528,28 +530,29 @@ body::before {
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
   border-bottom: 3px solid #cc0000;
 }
 
 .profile { position: relative; flex-shrink: 0; }
 
 .profile-frame {
-  width: 70px; height: 70px;
+  width: 84px; height: 84px;
   border-radius: 50%;
-  border: 3px solid #cc0000;
-  box-shadow: 0 0 0 3px #222, 0 0 12px rgba(204,0,0,0.15), inset 0 0 15px rgba(0,0,0,0.2);
+  border: 4px solid #cc0000;
+  box-shadow: 0 0 0 3px #222, 0 0 16px rgba(204,0,0,0.2), inset 0 0 15px rgba(0,0,0,0.2);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   background: #1a1a1a;
 }
 
 .profile-frame:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 0 3px #222, 0 0 20px rgba(204,0,0,0.3), inset 0 0 15px rgba(0,0,0,0.2);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px #222, 0 0 28px rgba(204,0,0,0.45), 0 0 50px rgba(204,0,0,0.15), inset 0 0 15px rgba(0,0,0,0.2);
+  border-color: #e60000;
 }
 
 .profile-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -565,34 +568,35 @@ body::before {
 
 .profile-hint {
   position: absolute;
-  bottom: -5px; left: 50%;
+  bottom: -6px; left: 50%;
   transform: translateX(-50%);
-  font-size: 8px; color: #cc0000;
+  font-size: 9px; color: #cc0000;
   background: #f5f0e8;
-  padding: 0 6px;
+  padding: 1px 8px;
   white-space: nowrap;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
   font-family: 'Bebas Neue', sans-serif;
   border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .title-section { flex: 1; }
 
 .title-section h1 {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 34px;
+  font-size: 36px;
   color: #222;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
 }
 
 .title-section .subtitle {
-  font-size: 11px;
+  font-size: 12px;
   color: #cc0000;
-  letter-spacing: 4px;
+  letter-spacing: 5px;
   text-transform: uppercase;
   font-family: 'Special Elite', monospace;
-  margin-top: -2px;
+  margin-top: -1px;
 }
 
 .title-section .date-display {
@@ -602,18 +606,7 @@ body::before {
   font-style: italic;
 }
 
-.sound-toggle {
-  background: none;
-  border: 1px solid rgba(0,0,0,0.15);
-  color: #666;
-  cursor: pointer;
-  font-size: 15px;
-  padding: 4px 7px;
-  border-radius: 3px;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.sound-toggle:hover { border-color: #cc0000; color: #cc0000; }
+/* music-btn styles moved above */
 
 /* ═══════════════════════════════════════════
    JOURNAL — SEARCH & CONTROLS
@@ -656,45 +649,89 @@ body::before {
 .journal-controls .sort-btn:hover { border-color: #cc0000; color: #cc0000; }
 
 /* ═══════════════════════════════════════════
-   ENTRY LIST
+   ENTRY LIST — FIGHT CARDS
    ═══════════════════════════════════════════ */
 
 .entry-list-wrap {
-  max-height: 35vh;
+  max-height: 40vh;
   min-height: 60px;
   overflow-y: auto;
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 2px;
-  background: rgba(0,0,0,0.02);
-  margin-bottom: 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  margin-bottom: 14px;
+  padding: 0;
 }
 
-.entry-list-wrap::-webkit-scrollbar { width: 6px; }
-.entry-list-wrap::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); border-radius: 3px; }
+.entry-list-wrap::-webkit-scrollbar { width: 5px; }
+.entry-list-wrap::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); border-radius: 3px; }
 .entry-list-wrap::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 3px; }
 .entry-list-wrap::-webkit-scrollbar-thumb:hover { background: #990000; }
 
 .entry-list {
   list-style: none;
-}
-
-.entry-list li {
-  padding: 7px 10px;
-  cursor: pointer;
-  font-size: 11.5px;
-  color: #333;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.15s;
-  border-left: 3px solid transparent;
+  flex-direction: column;
   gap: 8px;
 }
 
-.entry-list li:hover { background: rgba(204,0,0,0.05); border-left-color: #cc0000; }
-.entry-list li.active { background: rgba(204,0,0,0.08); border-left-color: #cc0000; font-weight: bold; }
+.entry-card {
+  background: linear-gradient(145deg, #faf6ee 0%, #f0ead8 100%);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-left: 4px solid #cc0000;
+  border-radius: 6px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  position: relative;
+  animation: cardFadeIn 0.3s ease backwards;
+}
 
-.entry-list li .entry-title {
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.entry-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1), 0 0 0 1px rgba(204,0,0,0.1);
+  border-left-color: #e60000;
+}
+
+.entry-card.active {
+  background: linear-gradient(145deg, #fff8f0 0%, #ffeed8 100%);
+  border-left-width: 5px;
+  box-shadow: 0 4px 16px rgba(204,0,0,0.12), inset 0 0 0 1px rgba(204,0,0,0.08);
+}
+
+.entry-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.entry-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-card-mood {
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.entry-card-title {
+  font-family: 'Special Elite', monospace;
+  font-size: 12.5px;
+  font-weight: bold;
+  color: #222;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -702,31 +739,67 @@ body::before {
   min-width: 0;
 }
 
-.entry-list li .entry-meta {
+.entry-card-date {
+  font-family: 'Special Elite', monospace;
+  font-size: 9.5px;
+  color: #999;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.entry-card-preview {
+  font-family: 'Caveat', cursive;
+  font-size: 13px;
+  color: #777;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.entry-card-footer {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  font-size: 10px;
-  color: #999;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,0.05);
 }
 
-.entry-list li .entry-mood { font-size: 12px; line-height: 1; }
+.entry-card-meta {
+  font-family: 'Special Elite', monospace;
+  font-size: 9px;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-.entry-list li .delete-btn {
-  background: none;
-  border: none;
-  color: #ccc;
-  cursor: pointer;
-  font-size: 15px;
-  padding: 0 2px;
-  line-height: 1;
+.entry-card-actions {
+  display: flex;
+  gap: 4px;
   opacity: 0;
-  transition: all 0.15s;
-  flex-shrink: 0;
+  transition: opacity 0.2s;
 }
-.entry-list li:hover .delete-btn { opacity: 1; }
-.entry-list li .delete-btn:hover { color: #cc0000; }
+
+.entry-card:hover .entry-card-actions { opacity: 1; }
+
+.entry-card-action {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.1);
+  color: #888;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+}
+
+.entry-card-action:hover { border-color: #cc0000; color: #cc0000; }
+.entry-card-action.delete-action:hover { background: #cc0000; color: #fff; border-color: #cc0000; }
 
 /* ═══════════════════════════════════════════
    EMPTY STATE
@@ -734,7 +807,7 @@ body::before {
 
 .empty-state {
   text-align: center;
-  padding: 28px 16px;
+  padding: 32px 16px;
   color: #bbb;
   display: none;
 }
@@ -742,10 +815,10 @@ body::before {
 .empty-state.show { display: block; }
 
 .empty-state .trophy {
-  font-size: 52px;
-  margin-bottom: 10px;
+  font-size: 56px;
+  margin-bottom: 12px;
   display: block;
-  filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.25));
+  filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.3));
   animation: trophyFloat 3s ease-in-out infinite;
   position: relative;
 }
@@ -881,9 +954,9 @@ body::before {
   background: #222;
   color: #fff;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 4px;
-  padding: 6px 14px;
+  padding: 7px 14px;
   text-align: center;
   text-transform: uppercase;
   border-bottom: 2px solid #cc0000;
@@ -941,12 +1014,12 @@ body::before {
   background: transparent;
   border: none;
   font-family: 'Caveat', cursive;
-  font-size: 19px;
+  font-size: 20px;
   line-height: 28px;
   color: #222;
   resize: vertical;
   outline: none;
-  padding: 10px 14px 10px 56px;
+  padding: 12px 14px 12px 56px;
   position: relative;
   z-index: 1;
 }
@@ -964,8 +1037,8 @@ body::before {
 .toolbar {
   display: flex;
   gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 2px solid rgba(0,0,0,0.06);
   align-items: center;
   flex-wrap: wrap;
@@ -973,19 +1046,19 @@ body::before {
 
 .btn {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 14px;
-  padding: 8px 20px;
+  font-size: 15px;
+  padding: 9px 22px;
   border: 2px solid #222;
   background: transparent;
   color: #222;
   cursor: pointer;
   letter-spacing: 2px;
   text-transform: uppercase;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.btn:hover { background: #222; color: #f5f0e8; }
+.btn:hover { background: #222; color: #f5f0e8; transform: translateY(-1px); }
 .btn-primary { background: #cc0000; color: #fff; border-color: #cc0000; }
-.btn-primary:hover { background: #990000; border-color: #990000; }
+.btn-primary:hover { background: #990000; border-color: #990000; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(204,0,0,0.25); }
 
 .toolbar .char-count {
   font-size: 10px;
@@ -1018,7 +1091,8 @@ body::before {
 .del-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
   display: none;
   align-items: center;
   justify-content: center;
@@ -1029,11 +1103,12 @@ body::before {
 .del-box {
   background: #f5f0e8;
   border: 3px solid #cc0000;
-  border-radius: 4px;
-  padding: 24px 28px;
-  max-width: 320px;
+  border-radius: 8px;
+  padding: 26px 30px;
+  max-width: 340px;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.4);
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .del-box p {
@@ -1051,13 +1126,13 @@ body::before {
 
 .del-box .del-actions button {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 13px;
-  padding: 8px 24px;
+  font-size: 14px;
+  padding: 9px 26px;
   border: 2px solid #222;
   cursor: pointer;
   letter-spacing: 2px;
   text-transform: uppercase;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .del-box .del-actions .cancel-btn { background: transparent; color: #222; }
 .del-box .del-actions .cancel-btn:hover { background: #222; color: #f5f0e8; }
@@ -1065,8 +1140,246 @@ body::before {
 .del-box .del-actions .confirm-btn:hover { background: #990000; }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE
+   MUSIC PLAYER
    ═══════════════════════════════════════════ */
+
+.music-btn {
+  background: #222;
+  border: 2px solid #cc0000;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1.5px;
+}
+.music-btn:hover { background: #cc0000; border-color: #cc0000; box-shadow: 0 0 12px rgba(204,0,0,0.3); }
+.music-btn-icon { font-size: 14px; }
+.music-btn-label { text-transform: uppercase; }
+
+.music-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.25s ease;
+}
+.music-overlay.show { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.music-player {
+  background: linear-gradient(160deg, #f5f0e8 0%, #ece5d8 100%);
+  border: 3px solid #cc0000;
+  border-radius: 10px;
+  padding: 0;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.4), 0 0 30px rgba(204,0,0,0.12);
+  overflow: hidden;
+  animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.music-player-header {
+  background: #222;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #cc0000;
+}
+
+.music-player-header h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  color: #fff;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.music-player-close {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.music-player-close:hover { background: #cc0000; border-color: #cc0000; }
+
+.music-player-body { padding: 20px; }
+
+.music-now-playing {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.music-now-playing-label {
+  font-family: 'Special Elite', monospace;
+  font-size: 9px;
+  color: #999;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.music-now-playing-title {
+  font-family: 'Caveat', cursive;
+  font-size: 20px;
+  color: #222;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.music-now-playing-artist {
+  font-family: 'Special Elite', monospace;
+  font-size: 11px;
+  color: #cc0000;
+  margin-top: 2px;
+}
+
+.music-progress-wrap {
+  margin-bottom: 14px;
+}
+
+.music-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.music-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #cc0000, #ff3333);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.music-progress-bar:hover .music-progress-fill {
+  background: linear-gradient(90deg, #990000, #cc0000);
+}
+
+.music-time {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Special Elite', monospace;
+  font-size: 10px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.music-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.music-ctrl-btn {
+  background: none;
+  border: 2px solid #222;
+  color: #222;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.music-ctrl-btn:hover { background: #222; color: #f5f0e8; }
+
+.music-play-btn {
+  width: 48px;
+  height: 48px;
+  background: #cc0000;
+  border-color: #cc0000;
+  color: #fff;
+  font-size: 18px;
+}
+.music-play-btn:hover { background: #990000; border-color: #990000; }
+
+.music-volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.music-volume-icon { font-size: 13px; color: #666; flex-shrink: 0; }
+
+.music-volume-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.music-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #cc0000;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.15s;
+}
+
+.music-volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.music-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #cc0000;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* ═══════════════════════════════════════════
+   SEARCH BAR
+   ═══════════════════════════════════════════ */
+
+.journal-controls .search-box::placeholder { color: #bbb; }
 
 @media (max-width: 640px) {
   body { padding: 16px 8px; }
@@ -1075,12 +1388,14 @@ body::before {
   .ring-inner { padding: 18px 0 12px; }
   .top-bar { gap: 10px; flex-wrap: wrap; }
   .title-section h1 { font-size: 26px; }
-  .profile-frame { width: 55px; height: 55px; }
+  .profile-frame { width: 66px; height: 66px; }
   .editor textarea { min-height: 240px; font-size: 17px; padding-left: 44px; }
   .write-area::before { left: 34px; }
   .round-marker { display: none; }
-  .entry-list li { min-height: 36px; }
-  .entry-list li .delete-btn { opacity: 1; }
+  .entry-card { padding: 10px 12px; }
+  .entry-card-title { font-size: 11.5px; }
+  .entry-card-preview { font-size: 12px; }
+  .entry-card-actions { opacity: 1; }
   .glove-toggle { bottom: -70px; }
   .glove-3d { width: 40px; height: 40px; }
   .ring-body.collapsed ~ .ring-rope-bottom ~ .glove-toggle { bottom: -8px; }
@@ -1091,11 +1406,14 @@ body::before {
   .glove-toggle .chain-wrap .link:nth-child(odd) { width: 8px; height: 3px; }
   .journal-controls { flex-wrap: wrap; }
   .journal-controls .search-box { min-width: 100%; }
-  .sound-toggle, .journal-controls .sort-btn { padding: 8px 12px; font-size: 13px; }
+  .music-btn { padding: 8px 10px; font-size: 11px; }
+  .music-btn-label { display: none; }
+  .journal-controls .sort-btn { padding: 8px 12px; font-size: 13px; }
   .meta-row { gap: 6px; }
   .editor input[type="text"] { min-width: 80px; }
   .btn { padding: 10px 16px; font-size: 13px; }
   .toolbar { gap: 6px; }
+  .music-player { max-width: 320px; }
 }
 
 @media (max-width: 400px) {
@@ -1104,10 +1422,13 @@ body::before {
   .glove-toggle .shadow { width: 34px; height: 6px; }
   .editor textarea { min-height: 200px; font-size: 15px; padding-left: 36px; padding-right: 10px; }
   .write-area::before { left: 28px; }
-  .entry-list li { font-size: 10px; min-height: 32px; }
+  .entry-card-title { font-size: 10.5px; }
+  .entry-card-preview { font-size: 11px; }
   .title-section h1 { font-size: 22px; }
   .title-section .subtitle { font-size: 9px; letter-spacing: 2px; }
   .btn { font-size: 12px; padding: 8px 12px; }
+  .toolbar { gap: 6px; }
+  .profile-frame { width: 58px; height: 58px; }
 }
 </style>
 </head>
@@ -1135,11 +1456,14 @@ body::before {
           <div class="subtitle">&#x271E; Champion's Journal &#x271E;</div>
           <div class="date-display" id="currentDate"></div>
         </div>
-        <button class="sound-toggle" id="soundToggle" title="Toggle typing sounds">&#x1F50A;</button>
+        <button class="music-btn" id="musicBtn" title="Training Theme">
+          <span class="music-btn-icon">&#x1F3B5;</span>
+          <span class="music-btn-label">Training Theme</span>
+        </button>
       </div>
 
       <div class="journal-controls">
-        <input class="search-box" id="searchBox" type="text" placeholder="Search entries...">
+        <input class="search-box" id="searchBox" type="text" placeholder="&#x1F50D; Search past fights...">
         <button class="sort-btn" id="sortBtn">&#x25B2; Newest</button>
       </div>
 
@@ -1240,6 +1564,41 @@ body::before {
     <div class="del-actions">
       <button class="cancel-btn" id="delCancel">Cancel</button>
       <button class="confirm-btn" id="delConfirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MUSIC PLAYER -->
+<div class="music-overlay" id="musicOverlay">
+  <div class="music-player">
+    <div class="music-player-header">
+      <h3>&#x1F3B5; Training Theme</h3>
+      <button class="music-player-close" id="musicClose">&times;</button>
+    </div>
+    <div class="music-player-body">
+      <div class="music-now-playing">
+        <div class="music-now-playing-label">Now Playing</div>
+        <div class="music-now-playing-title" id="musicTitle">Under Pressure</div>
+        <div class="music-now-playing-artist" id="musicArtist">Hajime no Ippo OST</div>
+      </div>
+      <div class="music-progress-wrap">
+        <div class="music-progress-bar" id="musicProgressBar">
+          <div class="music-progress-fill" id="musicProgressFill"></div>
+        </div>
+        <div class="music-time">
+          <span id="musicCurrentTime">0:00</span>
+          <span id="musicDuration">0:00</span>
+        </div>
+      </div>
+      <div class="music-controls">
+        <button class="music-ctrl-btn" id="musicPrev" title="Previous">&#x23EE;</button>
+        <button class="music-ctrl-btn music-play-btn" id="musicPlayPause" title="Play">&#x25B6;</button>
+        <button class="music-ctrl-btn" id="musicNext" title="Next">&#x23ED;</button>
+      </div>
+      <div class="music-volume-wrap">
+        <span class="music-volume-icon">&#x1F509;</span>
+        <input type="range" class="music-volume-slider" id="musicVolume" min="0" max="100" value="70">
+      </div>
     </div>
   </div>
 </div>
@@ -1367,7 +1726,19 @@ body::before {
   const profileUpload = $('profileUpload');
   const profileImg = $('profileImg');
   const profilePlaceholder = $('profilePlaceholder');
-  const soundToggle = $('soundToggle');
+  const musicBtn = $('musicBtn');
+  const musicOverlay = $('musicOverlay');
+  const musicClose = $('musicClose');
+  const musicPlayPause = $('musicPlayPause');
+  const musicPrev = $('musicPrev');
+  const musicNext = $('musicNext');
+  const musicVolume = $('musicVolume');
+  const musicProgressBar = $('musicProgressBar');
+  const musicProgressFill = $('musicProgressFill');
+  const musicCurrentTime = $('musicCurrentTime');
+  const musicDuration = $('musicDuration');
+  const musicTitle = $('musicTitle');
+  const musicArtist = $('musicArtist');
   const ringBody = $('ringBody');
   const gloveToggle = $('gloveToggle');
   const gloveLabel = gloveToggle.querySelector('.glove-label');
@@ -1461,40 +1832,50 @@ body::before {
     entryList.innerHTML = '';
     emptyState.classList.toggle('show', filtered.length === 0);
 
-    for (const e of filtered) {
-      const li = document.createElement('li');
-      if (e.id === currentId) li.classList.add('active');
+    for (let i = 0; i < filtered.length; i++) {
+      const e = filtered[i];
+      const card = document.createElement('li');
+      card.className = 'entry-card';
+      if (e.id === currentId) card.classList.add('active');
+      card.style.animationDelay = (i * 0.05) + 's';
 
-      const titleSpan = document.createElement('span');
-      titleSpan.className = 'entry-title';
-      titleSpan.textContent = e.title || e.content.trim().split('\n')[0] || 'Untitled';
+      const preview = (e.content || '').substring(0, 80).replace(/\n/g, ' ');
 
-      const meta = document.createElement('span');
-      meta.className = 'entry-meta';
+      card.innerHTML = `
+        <div class="entry-card-header">
+          <div class="entry-card-title-row">
+            <span class="entry-card-mood">${e.mood || ''}</span>
+            <span class="entry-card-title">${e.title || 'Untitled'}</span>
+          </div>
+          <span class="entry-card-date">${e.date}</span>
+        </div>
+        <div class="entry-card-preview">${preview ? '"' + preview + (e.content.length > 80 ? '...' : '') + '"' : 'No content yet...'}</div>
+        <div class="entry-card-footer">
+          <div class="entry-card-meta">
+            <span>${e.dayOfWeek || ''}</span>
+            <span>${e.time || ''}</span>
+            <span>${e.charCount || 0} chars</span>
+          </div>
+          <div class="entry-card-actions">
+            <button class="entry-card-action" data-action="edit">Edit</button>
+            <button class="entry-card-action delete-action" data-action="delete">&times;</button>
+          </div>
+        </div>
+      `;
 
-      const moodSpan = document.createElement('span');
-      moodSpan.className = 'entry-mood';
-      moodSpan.textContent = e.mood || '';
+      card.addEventListener('click', (ev) => {
+        if (ev.target.closest('.entry-card-action')) return;
+        selectEntry(e.id);
+      });
 
-      const dateSpan = document.createElement('span');
-      dateSpan.textContent = e.date;
-
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn';
-      delBtn.textContent = '\u00d7';
-      delBtn.addEventListener('click', ev => {
+      card.querySelector('[data-action="edit"]').addEventListener('click', () => selectEntry(e.id));
+      card.querySelector('[data-action="delete"]').addEventListener('click', (ev) => {
         ev.stopPropagation();
         pendingDeleteId = e.id;
         delOverlay.classList.add('show');
       });
 
-      meta.appendChild(moodSpan);
-      meta.appendChild(dateSpan);
-      li.appendChild(titleSpan);
-      li.appendChild(meta);
-      li.appendChild(delBtn);
-      li.addEventListener('click', () => selectEntry(e.id));
-      entryList.appendChild(li);
+      entryList.appendChild(card);
     }
   }
 
@@ -1767,9 +2148,91 @@ body::before {
   });
   entryContent.addEventListener('click', () => { try { getAudioCtx().resume(); } catch {} });
 
-  soundToggle.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    soundToggle.textContent = soundEnabled ? '\u{1F50A}' : '\u{1F507}';
+  /* ═══════════════════════════════════════════
+     MUSIC PLAYER
+     ═══════════════════════════════════════════ */
+
+  const playlist = [
+    { title: 'Under Pressure', artist: 'Hajime no Ippo OST' },
+    { title: 'Hokuto no Ken Theme', artist: 'Fist of the North Star' },
+    { title: 'Guts Theme', artist: 'Berserk OST' },
+    { title: 'Unravel', artist: 'Tokyo Ghoul' },
+    { title: 'THE HERO!!', artist: 'One Punch Man OST' }
+  ];
+
+  let currentTrack = 0;
+  let isPlaying = false;
+  let musicAudio = null;
+  let musicProgressInterval = null;
+
+  function updateTrackDisplay() {
+    musicTitle.textContent = playlist[currentTrack].title;
+    musicArtist.textContent = playlist[currentTrack].artist;
+  }
+
+  function openMusicPlayer() {
+    musicOverlay.classList.add('show');
+    updateTrackDisplay();
+  }
+
+  function closeMusicPlayer() {
+    musicOverlay.classList.remove('show');
+  }
+
+  function toggleMusicPlayPause() {
+    isPlaying = !isPlaying;
+    musicPlayPause.innerHTML = isPlaying ? '&#x23F8;' : '&#x25B6;';
+    if (isPlaying) {
+      musicProgressInterval = setInterval(() => {
+        const fill = musicProgressFill;
+        let w = parseFloat(fill.style.width) || 0;
+        if (w >= 100) { w = 0; nextTrack(); }
+        fill.style.width = (w + 0.3) + '%';
+        updateTimeDisplay(w);
+      }, 100);
+    } else {
+      clearInterval(musicProgressInterval);
+    }
+  }
+
+  function nextTrack() {
+    currentTrack = (currentTrack + 1) % playlist.length;
+    musicProgressFill.style.width = '0%';
+    updateTrackDisplay();
+    updateTimeDisplay(0);
+    if (isPlaying) { clearInterval(musicProgressInterval); toggleMusicPlayPause(); toggleMusicPlayPause(); }
+  }
+
+  function prevTrack() {
+    currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+    musicProgressFill.style.width = '0%';
+    updateTrackDisplay();
+    updateTimeDisplay(0);
+    if (isPlaying) { clearInterval(musicProgressInterval); toggleMusicPlayPause(); toggleMusicPlayPause(); }
+  }
+
+  function updateTimeDisplay(pct) {
+    const total = 240;
+    const cur = Math.floor((pct / 100) * total);
+    const m = Math.floor(cur / 60);
+    const s = String(cur % 60).padStart(2, '0');
+    musicCurrentTime.textContent = m + ':' + s;
+    musicDuration.textContent = '4:00';
+  }
+
+  musicBtn.addEventListener('click', openMusicPlayer);
+  musicClose.addEventListener('click', closeMusicPlayer);
+  musicOverlay.addEventListener('click', e => { if (e.target === musicOverlay) closeMusicPlayer(); });
+  musicPlayPause.addEventListener('click', toggleMusicPlayPause);
+  musicNext.addEventListener('click', nextTrack);
+  musicPrev.addEventListener('click', prevTrack);
+  musicVolume.addEventListener('input', () => {});
+
+  musicProgressBar.addEventListener('click', e => {
+    const rect = musicProgressBar.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    musicProgressFill.style.width = pct + '%';
+    updateTimeDisplay(pct);
   });
 
   /* ═══════════════════════════════════════════
