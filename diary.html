@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fighter's Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400;700&family=Special+Elite&family=Black+Ops+One&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: #0d0a08;
+  background-image: url('bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: 'Special Elite', monospace;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ring {
+  width: 100%;
+  max-width: 780px;
+  position: relative;
+  z-index: 2;
+}
+
+.ring-rope-top {
+  height: 12px;
+  background: linear-gradient(90deg, #cc0000 0%, #ffffff 50%, #cc0000 100%);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  z-index: 3;
+}
+
+.ring-rope-top::before, .ring-rope-top::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  width: 18px;
+  height: 26px;
+  border: 3px solid #cc0000;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+}
+.ring-rope-top::before { left: 15px; }
+.ring-rope-top::after { right: 15px; }
+
+.corner-pad {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: #cc0000;
+  border-radius: 50%;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2);
+}
+.corner-pad.tl { top: -8px; left: -2px; }
+.corner-pad.tr { top: -8px; right: -2px; }
+.corner-pad.bl { bottom: -8px; left: -2px; }
+.corner-pad.br { bottom: -8px; right: -2px; }
+
+.ring-body {
+  background: #f5f0e8;
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.55s cubic-bezier(0.22, 1, 0.36, 1), padding 0.45s ease;
+  max-height: 1000px;
+  padding: 0 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  border-left: 3px solid #cc0000;
+  border-right: 3px solid #cc0000;
+}
+
+.ring-body.collapsed { max-height: 0; padding: 0 30px; }
+
+.ring-inner {
+  position: relative;
+  z-index: 2;
+  padding: 28px 0 18px;
+}
+
+.ring-rope-bottom {
+  height: 12px;
+  background: linear-gradient(90deg, #cc0000 0%, #ffffff 50%, #cc0000 100%);
+  border-radius: 0 0 4px 4px;
+  position: relative;
+  box-shadow: 0 -3px 8px rgba(0,0,0,0.3);
+  z-index: 3;
+}
+
+/* ═══════════════════════════════════════════
+   GLOVE — compact, clean, natural
+   ═══════════════════════════════════════════ */
+
+.glove-toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -80px;
+  z-index: 5;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  will-change: transform;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Floor shadow — wider, softer */
+.glove-toggle .shadow {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  width: 52px;
+  height: 10px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.glove-toggle:hover .shadow {
+  transform: translateX(-50%) scaleX(0.6);
+  opacity: 0.5;
+}
+
+.glove-toggle:hover {
+  transform: translateX(-50%) translateY(-4px) rotate(-3deg) scale(1.05);
+}
+
+.glove-toggle:active:not(.is-punching):not(.is-opening) {
+  transform: translateX(-50%) translateY(-1px) rotate(-1deg) scale(0.97);
+  transition: transform 0.06s ease;
+}
+
+.glove-3d {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+/* Main glove body — clean rounded shape */
+.glove-3d .body {
+  position: absolute;
+  inset: 3px 1px 6px 1px;
+  background: radial-gradient(ellipse at 35% 30%, #da2828 0%, #a00a0a 40%, #5a0303 85%, #1a0000 100%);
+  border-radius: 45% 45% 30% 30% / 55% 55% 25% 25%;
+  box-shadow:
+    inset -3px -3px 10px rgba(0,0,0,0.55),
+    inset 3px 2px 6px rgba(255,200,150,0.1),
+    0 3px 10px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+
+/* Subtle leather grain */
+.glove-3d .body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(rgba(0,0,0,0.02) 0% 25%, transparent 0% 50%) 0 0 / 3px 3px;
+  pointer-events: none;
+}
+
+/* Top highlight */
+.glove-3d .body::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; right: 25%;
+  height: 45%;
+  background: radial-gradient(ellipse at 50% 25%, rgba(255,220,180,0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Thumb */
+.glove-3d .thumb {
+  position: absolute;
+  top: 18%;
+  left: -6px;
+  width: 20px;
+  height: 30px;
+  background: radial-gradient(ellipse at 40% 45%, #c01515 0%, #6b0303 60%, #1a0000 100%);
+  border-radius: 50% 20% 20% 50% / 50% 30% 30% 50%;
+  box-shadow:
+    inset -2px -2px 6px rgba(0,0,0,0.5),
+    inset 2px 1px 4px rgba(255,200,150,0.07),
+    -2px 2px 5px rgba(0,0,0,0.25);
+  transform: rotate(-4deg);
+}
+
+/* Thumb highlight */
+.glove-3d .thumb::after {
+  content: '';
+  position: absolute;
+  top: 15%; left: 20%;
+  width: 50%; height: 35%;
+  background: radial-gradient(ellipse, rgba(255,220,180,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Knuckles — clean indentations */
+.glove-3d .knuckle {
+  position: absolute;
+  border-radius: 40%;
+  pointer-events: none;
+}
+.glove-3d .knuckle::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 10%;
+  width: 80%; height: 6px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.glove-3d .knuckle.k1 { top: 22%; left: 22%; width: 10px; height: 6px; background: rgba(0,0,0,0.14); }
+.glove-3d .knuckle.k2 { top: 20%; left: 38%; width: 10px; height: 6px; background: rgba(0,0,0,0.11); }
+.glove-3d .knuckle.k3 { top: 22%; left: 54%; width: 9px; height: 6px; background: rgba(0,0,0,0.09); }
+
+/* Eyelets */
+.glove-3d .eyelets {
+  position: absolute;
+  top: 34%;
+  right: 14%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  pointer-events: none;
+}
+.glove-3d .eyelets span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: #1a0000;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Laces — simple crossed */
+.glove-3d .laces {
+  position: absolute;
+  top: 32%;
+  right: 10%;
+  width: 24px;
+  height: 38px;
+  pointer-events: none;
+}
+.glove-3d .laces::before,
+.glove-3d .laces::after {
+  content: '';
+  position: absolute;
+  width: 1.5px;
+  height: 12px;
+  background: #e0d0c0;
+  border-radius: 1px;
+  opacity: 0.6;
+}
+.glove-3d .laces::before { top: 0; left: 2px; transform: rotate(16deg); }
+.glove-3d .laces::after  { top: 4px; left: 8px; transform: rotate(-14deg); }
+
+/* Cuff */
+.glove-3d .cuff {
+  position: absolute;
+  bottom: 4px;
+  left: 3px;
+  right: 3px;
+  height: 12px;
+  background: linear-gradient(180deg, #6b0303, #3a0101);
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+/* Cuff stitching */
+.glove-3d .cuff::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 6px;
+  right: 6px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(200,180,160,0.15) 0px, rgba(200,180,160,0.15) 1.5px, transparent 1.5px, transparent 3px);
+}
+
+/* Strap */
+.glove-3d .strap {
+  position: absolute;
+  bottom: -2px;
+  left: 3px;
+  right: 3px;
+  height: 10px;
+  background: linear-gradient(180deg, #333, #181818);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+/* Strap red line */
+.glove-3d .strap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: #cc0000;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+
+/* Left edge highlight */
+.glove-3d .rim-light {
+  position: absolute;
+  top: 8%;
+  left: 1px;
+  width: 3px;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,220,180,0.1) 0%, transparent 60%);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* ─── Chain ─── */
+.glove-toggle .chain-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 2px;
+  transition: transform 0.3s ease;
+}
+
+.glove-toggle .chain-wrap .link {
+  width: 7px;
+  height: 7px;
+  border: 2px solid #888;
+  border-radius: 50%;
+  background: #bbb;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 2px rgba(0,0,0,0.2);
+}
+.glove-toggle .chain-wrap .link:nth-child(odd) {
+  width: 11px;
+  height: 4px;
+  border-radius: 2px;
+  border-color: #888;
+  background: #ccc;
+}
+
+/* ─── Label ─── */
+.glove-toggle .glove-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 9px;
+  color: #fff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.5);
+  padding: 2px 10px;
+  border-radius: 3px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════
+   GLOVE ANIMATIONS
+   ═══════════════════════════════════════════ */
+
+/* Punch forward */
+.glove-toggle.is-punching {
+  pointer-events: none;
+}
+
+.glove-toggle.is-punching .glove-3d {
+  animation: glovePunch 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes glovePunch {
+  0%   { transform: rotate(-4deg) translateX(0) translateY(0); }
+  18%  { transform: rotate(-1deg) translateX(24px) translateY(-4px) scale(1.12, 0.9); }
+  32%  { transform: rotate(2deg) translateX(30px) translateY(-2px) scale(0.9, 1.08); }
+  48%  { transform: rotate(0deg) translateX(18px) translateY(-1px) scale(1.04, 0.96); }
+  72%  { transform: rotate(-1deg) translateX(6px) translateY(0) scale(1); }
+  100% { transform: rotate(0deg) translateX(0) translateY(0); }
+}
+
+.glove-toggle.is-punching .chain-wrap {
+  animation: chainSnap 0.32s ease-out;
+}
+
+@keyframes chainSnap {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(5px); }
+  55%  { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+/* Speed lines */
+.glove-toggle.is-punching .speed-lines {
+  position: absolute;
+  top: 50%;
+  right: -8px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: translateY(-50%);
+  animation: speedLines 0.28s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes speedLines {
+  0%   { opacity: 0; width: 0; right: 0; }
+  25%  { opacity: 1; width: 55px; right: -12px; }
+  100% { opacity: 0; width: 80px; right: -30px; }
+}
+
+/* Impact flash */
+.glove-toggle.is-punching .impact-flash {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  background: radial-gradient(circle, rgba(255,200,80,0.55) 0%, rgba(255,200,80,0.2) 30%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: impactFlash 0.22s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes impactFlash {
+  0%   { width: 0; height: 0; opacity: 1; }
+  35%  { width: 70px; height: 70px; opacity: 0.8; }
+  100% { width: 110px; height: 110px; opacity: 0; }
+}
+
+/* Open (maximize) */
+.glove-toggle.is-opening {
+  pointer-events: none;
+}
+
+.glove-toggle.is-opening .glove-3d {
+  animation: gloveOpen 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes gloveOpen {
+  0%   { transform: rotate(0deg) translateX(0) translateY(0); }
+  28%  { transform: rotate(-7deg) translateX(-10px) translateY(-3px) scale(0.94); }
+  55%  { transform: rotate(3deg) translateX(4px) translateY(-1px) scale(1.06); }
+  100% { transform: rotate(0deg) translateX(0) translateY(0); }
+}
+
+/* Idle breathing when minimized */
+.glove-toggle.idle {
+  animation: gloveIdle 3.5s ease-in-out infinite;
+}
+
+.glove-toggle.idle .glove-3d .body::after {
+  animation: leatherShine 4.5s ease-in-out infinite;
+}
+
+@keyframes gloveIdle {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-1deg); }
+  20% { transform: translateX(-50%) translateY(-3px) rotate(0deg); }
+  40% { transform: translateX(-50%) translateY(-1px) rotate(-2deg); }
+  60% { transform: translateX(-50%) translateY(-2px) rotate(-1deg); }
+  80% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
+}
+
+@keyframes leatherShine {
+  0%, 92%, 100% { opacity: 0.2; }
+  95% { opacity: 0.5; }
+  97% { opacity: 0.15; }
+}
+
+/* Screen shake */
+.screen-shake {
+  animation: shake 0.22s ease-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0); }
+  12%  { transform: translate(-2px, 1px); }
+  28%  { transform: translate(2px, -1px); }
+  44%  { transform: translate(-1px, 1px); }
+  60%  { transform: translate(1px, -1px); }
+  78%  { transform: translate(-1px, 0); }
+}
+
+/* ─── Collapsed state: glove peeks from edge ─── */
+.ring-body.collapsed ~ .ring-rope-bottom ~ .glove-toggle {
+  bottom: -12px;
+}
+
+.ring-body.collapsed ~ .ring-rope-bottom ~ .glove-toggle .glove-label {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .glove-toggle, .glove-toggle:hover, .glove-toggle:active,
+  .glove-toggle .glove-3d, .glove-toggle .chain-wrap,
+  .glove-toggle .shadow, .glove-toggle .glove-label,
+  .speed-lines, .impact-flash, .screen-shake,
+  .glove-toggle.idle { animation: none !important; transition: none !important; }
+}
+
+/* ═══════════════════════════════════════════
+   TOP BAR (unchanged theme)
+   ═══════════════════════════════════════════ */
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid #cc0000;
+}
+
+.profile { position: relative; flex-shrink: 0; }
+
+.profile-frame {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  border: 3px solid #cc0000;
+  box-shadow: 0 0 0 3px #222, 0 0 12px rgba(204,0,0,0.15), inset 0 0 15px rgba(0,0,0,0.2);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #1a1a1a;
+}
+
+.profile-frame:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px #222, 0 0 20px rgba(204,0,0,0.3), inset 0 0 15px rgba(0,0,0,0.2);
+}
+
+.profile-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.profile-frame .placeholder {
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: #1a1a1a;
+}
+
+.profile-hint {
+  position: absolute;
+  bottom: -5px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px; color: #cc0000;
+  background: #f5f0e8;
+  padding: 0 6px;
+  white-space: nowrap;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Bebas Neue', sans-serif;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.title-section { flex: 1; }
+
+.title-section h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 34px;
+  color: #222;
+  letter-spacing: 3px;
+}
+
+.title-section .subtitle {
+  font-size: 11px;
+  color: #cc0000;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-family: 'Special Elite', monospace;
+  margin-top: -2px;
+}
+
+.title-section .date-display {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.sound-toggle {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.15);
+  color: #666;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px 7px;
+  border-radius: 3px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.sound-toggle:hover { border-color: #cc0000; color: #cc0000; }
+
+/* ═══════════════════════════════════════════
+   JOURNAL — SEARCH & CONTROLS
+   ═══════════════════════════════════════════ */
+
+.journal-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.journal-controls .search-box {
+  flex: 1;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 3px;
+  padding: 6px 10px;
+  font-family: 'Special Elite', monospace;
+  font-size: 11px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.journal-controls .search-box:focus { border-color: #cc0000; }
+.journal-controls .search-box::placeholder { color: #bbb; }
+
+.journal-controls .sort-btn {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.08);
+  color: #666;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-family: 'Special Elite', monospace;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.journal-controls .sort-btn:hover { border-color: #cc0000; color: #cc0000; }
+
+/* ═══════════════════════════════════════════
+   ENTRY LIST
+   ═══════════════════════════════════════════ */
+
+.entry-list-wrap {
+  max-height: 35vh;
+  min-height: 60px;
+  overflow-y: auto;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 2px;
+  background: rgba(0,0,0,0.02);
+  margin-bottom: 12px;
+}
+
+.entry-list-wrap::-webkit-scrollbar { width: 6px; }
+.entry-list-wrap::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); border-radius: 3px; }
+.entry-list-wrap::-webkit-scrollbar-thumb { background: #cc0000; border-radius: 3px; }
+.entry-list-wrap::-webkit-scrollbar-thumb:hover { background: #990000; }
+
+.entry-list {
+  list-style: none;
+}
+
+.entry-list li {
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 11.5px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+  gap: 8px;
+}
+
+.entry-list li:hover { background: rgba(204,0,0,0.05); border-left-color: #cc0000; }
+.entry-list li.active { background: rgba(204,0,0,0.08); border-left-color: #cc0000; font-weight: bold; }
+
+.entry-list li .entry-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-list li .entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: #999;
+}
+
+.entry-list li .entry-mood { font-size: 12px; line-height: 1; }
+
+.entry-list li .delete-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.entry-list li:hover .delete-btn { opacity: 1; }
+.entry-list li .delete-btn:hover { color: #cc0000; }
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════ */
+
+.empty-state {
+  text-align: center;
+  padding: 28px 16px;
+  color: #bbb;
+  display: none;
+}
+
+.empty-state.show { display: block; }
+
+.empty-state .trophy {
+  font-size: 52px;
+  margin-bottom: 10px;
+  display: block;
+  filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.25));
+  animation: trophyFloat 3s ease-in-out infinite;
+  position: relative;
+}
+
+.empty-state .trophy::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 30%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@keyframes trophyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+.empty-state h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  color: #999;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 12px;
+  font-style: italic;
+  color: #bbb;
+}
+
+/* ═══════════════════════════════════════════
+   EDITOR
+   ═══════════════════════════════════════════ */
+
+.editor .meta-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.editor input[type="date"] {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(0,0,0,0.12);
+  font-family: 'Special Elite', monospace;
+  font-size: 11px;
+  color: #333;
+  padding: 4px 0;
+  outline: none;
+  letter-spacing: 1px;
+}
+.editor input[type="date"]:focus { border-bottom-color: #cc0000; }
+
+.editor input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(0,0,0,0.12);
+  font-family: 'Special Elite', monospace;
+  font-size: 11px;
+  color: #333;
+  padding: 4px 0;
+  outline: none;
+}
+.editor input[type="text"]::placeholder { color: #bbb; }
+.editor input[type="text"]:focus { border-bottom-color: #cc0000; }
+
+/* Mood selector */
+.mood-select {
+  position: relative;
+}
+
+.mood-select .mood-btn {
+  background: none;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 8px;
+  line-height: 1.4;
+  transition: all 0.2s;
+}
+.mood-select .mood-btn:hover { border-color: #cc0000; }
+
+.mood-select .mood-picker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: none;
+  z-index: 10;
+  padding: 4px;
+  gap: 2px;
+}
+.mood-select .mood-picker.open { display: flex; }
+
+.mood-select .mood-picker button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  transition: background 0.15s;
+}
+.mood-select .mood-picker button:hover { background: rgba(204,0,0,0.08); }
+.mood-select .mood-picker button.selected { background: rgba(204,0,0,0.12); }
+
+/* FIGHT CARD */
+.fight-card {
+  border: 2px solid #222;
+  border-radius: 4px;
+  background: #fff;
+  position: relative;
+  box-shadow: inset 0 0 0 1px #cc0000;
+}
+
+.fight-card-header {
+  background: #222;
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 4px;
+  padding: 6px 14px;
+  text-align: center;
+  text-transform: uppercase;
+  border-bottom: 2px solid #cc0000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fight-card-header span { color: #cc0000; }
+
+.fight-card-header .save-indicator {
+  font-family: 'Special Elite', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #888;
+  transition: color 0.3s;
+}
+
+.fight-card-header .save-indicator.saving { color: #cc0000; }
+.fight-card-header .save-indicator.saved { color: #4caf50; }
+
+.write-area {
+  position: relative;
+  padding: 0;
+}
+
+.write-area::before {
+  content: '';
+  position: absolute;
+  left: 44px;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: repeating-linear-gradient(180deg, #cc0000 0px, #cc0000 4px, transparent 4px, transparent 8px);
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.round-marker {
+  position: absolute;
+  left: 8px;
+  font-family: 'Black Ops One', 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  color: #cc0000;
+  pointer-events: none;
+  z-index: 2;
+  line-height: 28px;
+  opacity: 0.5;
+  letter-spacing: 0;
+}
+
+.editor textarea {
+  width: 100%;
+  min-height: 310px;
+  background: transparent;
+  border: none;
+  font-family: 'Caveat', cursive;
+  font-size: 19px;
+  line-height: 28px;
+  color: #222;
+  resize: vertical;
+  outline: none;
+  padding: 10px 14px 10px 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.editor textarea::placeholder {
+  color: #ccc;
+  font-style: italic;
+  font-size: 18px;
+}
+
+/* ═══════════════════════════════════════════
+   TOOLBAR
+   ═══════════════════════════════════════════ */
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid rgba(0,0,0,0.06);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  padding: 8px 20px;
+  border: 2px solid #222;
+  background: transparent;
+  color: #222;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.btn:hover { background: #222; color: #f5f0e8; }
+.btn-primary { background: #cc0000; color: #fff; border-color: #cc0000; }
+.btn-primary:hover { background: #990000; border-color: #990000; }
+
+.toolbar .char-count {
+  font-size: 10px;
+  color: #aaa;
+  margin-left: auto;
+  font-style: italic;
+}
+
+.toolbar .status {
+  font-size: 11px;
+  color: #999;
+  min-height: 16px;
+  font-style: italic;
+}
+
+.toolbar .unsaved-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.toolbar .unsaved-dot.dirty { background: #cc0000; }
+
+/* ═══════════════════════════════════════════
+   DELETE CONFIRMATION OVERLAY
+   ═══════════════════════════════════════════ */
+
+.del-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.del-overlay.show { display: flex; }
+
+.del-box {
+  background: #f5f0e8;
+  border: 3px solid #cc0000;
+  border-radius: 4px;
+  padding: 24px 28px;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+.del-box p {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 16px;
+  font-family: 'Special Elite', monospace;
+}
+
+.del-box .del-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.del-box .del-actions button {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  padding: 8px 24px;
+  border: 2px solid #222;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.del-box .del-actions .cancel-btn { background: transparent; color: #222; }
+.del-box .del-actions .cancel-btn:hover { background: #222; color: #f5f0e8; }
+.del-box .del-actions .confirm-btn { background: #cc0000; color: #fff; border-color: #cc0000; }
+.del-box .del-actions .confirm-btn:hover { background: #990000; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  body { padding: 16px 8px; }
+  .ring-body { padding: 0 16px; }
+  .ring-body.collapsed { padding: 0 16px; }
+  .ring-inner { padding: 18px 0 12px; }
+  .top-bar { gap: 10px; flex-wrap: wrap; }
+  .title-section h1 { font-size: 26px; }
+  .profile-frame { width: 55px; height: 55px; }
+  .editor textarea { min-height: 240px; font-size: 17px; padding-left: 44px; }
+  .write-area::before { left: 34px; }
+  .round-marker { display: none; }
+  .entry-list li { min-height: 36px; }
+  .entry-list li .delete-btn { opacity: 1; }
+  .glove-toggle { bottom: -70px; }
+  .glove-3d { width: 40px; height: 40px; }
+  .ring-body.collapsed ~ .ring-rope-bottom ~ .glove-toggle { bottom: -8px; }
+  .glove-toggle .glove-label { font-size: 7px; padding: 1px 6px; letter-spacing: 1px; }
+  .glove-toggle .shadow { width: 40px; height: 8px; bottom: -10px; }
+  .glove-toggle .chain-wrap { gap: 2px; }
+  .glove-toggle .chain-wrap .link { width: 5px; height: 5px; }
+  .glove-toggle .chain-wrap .link:nth-child(odd) { width: 8px; height: 3px; }
+  .journal-controls { flex-wrap: wrap; }
+  .journal-controls .search-box { min-width: 100%; }
+  .sound-toggle, .journal-controls .sort-btn { padding: 8px 12px; font-size: 13px; }
+  .meta-row { gap: 6px; }
+  .editor input[type="text"] { min-width: 80px; }
+  .btn { padding: 10px 16px; font-size: 13px; }
+  .toolbar { gap: 6px; }
+}
+
+@media (max-width: 400px) {
+  .glove-3d { width: 36px; height: 36px; }
+  .glove-toggle { bottom: -62px; }
+  .glove-toggle .shadow { width: 34px; height: 6px; }
+  .editor textarea { min-height: 200px; font-size: 15px; padding-left: 36px; padding-right: 10px; }
+  .write-area::before { left: 28px; }
+  .entry-list li { font-size: 10px; min-height: 32px; }
+  .title-section h1 { font-size: 22px; }
+  .title-section .subtitle { font-size: 9px; letter-spacing: 2px; }
+  .btn { font-size: 12px; padding: 8px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="ring">
+  <div class="ring-rope-top">
+    <span class="corner-pad tl"></span>
+    <span class="corner-pad tr"></span>
+  </div>
+
+  <div class="ring-body" id="ringBody">
+    <div class="ring-inner">
+      <div class="top-bar">
+        <div class="profile">
+          <div class="profile-frame" id="profileFrame">
+            <img id="profileImg" style="display:none">
+            <div class="placeholder" id="profilePlaceholder">&#x1F94A;</div>
+          </div>
+          <input type="file" id="profileUpload" accept="image/*" style="display:none">
+          <div class="profile-hint">fighter</div>
+        </div>
+        <div class="title-section">
+          <h1>FIGHTER'S LOG</h1>
+          <div class="subtitle">&#x271E; Champion's Journal &#x271E;</div>
+          <div class="date-display" id="currentDate"></div>
+        </div>
+        <button class="sound-toggle" id="soundToggle" title="Toggle typing sounds">&#x1F50A;</button>
+      </div>
+
+      <div class="journal-controls">
+        <input class="search-box" id="searchBox" type="text" placeholder="Search entries...">
+        <button class="sort-btn" id="sortBtn">&#x25B2; Newest</button>
+      </div>
+
+      <div class="entry-list-wrap">
+        <ul class="entry-list" id="entryList"></ul>
+        <div class="empty-state" id="emptyState">
+          <span class="trophy" aria-hidden="true">&#x1F3C6;</span>
+          <h2>No Training Logs Yet</h2>
+          <p>Every champion starts with their first entry.</p>
+        </div>
+      </div>
+
+      <div class="editor">
+        <div class="meta-row">
+          <input type="date" id="entryDate">
+          <input type="text" id="entryTitle" placeholder="Title your entry...">
+          <div class="mood-select">
+            <button class="mood-btn" id="moodBtn">&#x1F610;</button>
+            <div class="mood-picker" id="moodPicker">
+              <button data-mood="&#x1F620;">&#x1F620;</button>
+              <button data-mood="&#x1F61E;">&#x1F61E;</button>
+              <button data-mood="&#x1F610;">&#x1F610;</button>
+              <button data-mood="&#x1F642;">&#x1F642;</button>
+              <button data-mood="&#x1F929;">&#x1F929;</button>
+              <button data-mood="&#x1F525;">&#x1F525;</button>
+            </div>
+          </div>
+        </div>
+        <div class="fight-card">
+          <div class="fight-card-header">
+            <span>&#x271E;</span> FIGHT CARD <span class="save-indicator" id="saveIndicator"></span>
+            <span>&#x271E;</span>
+          </div>
+          <div class="write-area">
+            <span class="round-marker" style="top:10px">R1</span>
+            <span class="round-marker" style="top:38px">R2</span>
+            <span class="round-marker" style="top:66px">R3</span>
+            <span class="round-marker" style="top:94px">R4</span>
+            <span class="round-marker" style="top:122px">R5</span>
+            <span class="round-marker" style="top:150px">R6</span>
+            <span class="round-marker" style="top:178px">R7</span>
+            <span class="round-marker" style="top:206px">R8</span>
+            <span class="round-marker" style="top:234px">R9</span>
+            <span class="round-marker" style="top:262px">R10</span>
+            <span class="round-marker" style="top:290px">R11</span>
+            <span class="round-marker" style="top:318px">R12</span>
+            <textarea id="entryContent" placeholder="Write your training journal..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <span class="unsaved-dot" id="unsavedDot"></span>
+        <button class="btn btn-primary" id="saveBtn">&#x1F4BE; Save</button>
+        <button class="btn" id="newBtn">&#x1F4DD; New</button>
+        <button class="btn" id="delBtn" style="display:none">&#x1F5D1; Delete</button>
+        <span class="char-count" id="charCount">0 chars</span>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ring-rope-bottom">
+    <span class="corner-pad bl"></span>
+    <span class="corner-pad br"></span>
+  </div>
+
+  <!-- COMPLETELY NEW GLOVE COMPONENT -->
+  <div class="glove-toggle" id="gloveToggle" role="button" tabindex="0" aria-label="Toggle diary">
+    <div class="chain-wrap" aria-hidden="true">
+      <span class="link"></span><span class="link"></span><span class="link"></span>
+      <span class="link"></span><span class="link"></span>
+    </div>
+    <div class="glove-3d">
+      <div class="body">
+        <div class="knuckle k1"></div>
+        <div class="knuckle k2"></div>
+        <div class="knuckle k3"></div>
+        <div class="eyelets"><span></span><span></span><span></span></div>
+        <div class="laces"></div>
+      </div>
+      <div class="thumb"></div>
+      <div class="cuff"></div>
+      <div class="strap"></div>
+      <div class="rim-light"></div>
+      <span class="impact-flash" aria-hidden="true"></span>
+      <span class="speed-lines" aria-hidden="true"></span>
+    </div>
+    <span class="glove-label">&#x25B2; CLOSE &#x25B2;</span>
+    <span class="shadow" aria-hidden="true"></span>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION -->
+<div class="del-overlay" id="delOverlay">
+  <div class="del-box">
+    <p>Delete this entry forever?</p>
+    <div class="del-actions">
+      <button class="cancel-btn" id="delCancel">Cancel</button>
+      <button class="confirm-btn" id="delConfirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ═══════════════════════════════════════════
+     CONSTANTS
+     ═══════════════════════════════════════════ */
+
+  const STORAGE_KEY = 'fighter_log_entries_v2';
+  const PROFILE_KEY = 'fighter_profile_v2';
+
+  /* ═══════════════════════════════════════════
+     JOURNAL STORAGE — structured helpers
+     ═══════════════════════════════════════════ */
+
+  function loadEntries() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+
+  function saveEntries(entries) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  function createEntry(data) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    return {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date: data.date || todayStr(),
+      time: pad(now.getHours()) + ':' + pad(now.getMinutes()),
+      dayOfWeek: days[now.getDay()],
+      mood: data.mood || '\u{1F610}',
+      title: (data.title || '').trim(),
+      content: data.content || '',
+      charCount: (data.content || '').length,
+      createdAt: now.toISOString(),
+      lastEdited: now.toISOString()
+    };
+  }
+
+  function updateEntry(entry, data) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    if (data.date !== undefined) entry.date = data.date;
+    if (data.mood !== undefined) entry.mood = data.mood;
+    if (data.title !== undefined) entry.title = (data.title || '').trim();
+    if (data.content !== undefined) {
+      entry.content = data.content;
+      entry.charCount = data.content.length;
+    }
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    entry.time = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    entry.dayOfWeek = days[now.getDay()];
+    entry.lastEdited = now.toISOString();
+  }
+
+  function deleteEntryById(entries, id) {
+    return entries.filter(e => e.id !== id);
+  }
+
+  function searchEntries(entries, query) {
+    if (!query.trim()) return entries;
+    const q = query.toLowerCase();
+    return entries.filter(e =>
+      (e.title || '').toLowerCase().includes(q) ||
+      (e.content || '').toLowerCase().includes(q)
+    );
+  }
+
+  function sortEntries(entries, order) {
+    const copy = [...entries];
+    if (order === 'oldest') {
+      copy.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else {
+      copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    return copy;
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function formatDateFull(s) {
+    const d = new Date(s + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  /* ═══════════════════════════════════════════
+     STATE
+     ═══════════════════════════════════════════ */
+
+  let entries = loadEntries();
+  let currentId = null;
+  let soundEnabled = true;
+  let isUnrolled = true;
+  let isAnimating = false;
+  let sortOrder = 'newest';
+  let searchQuery = '';
+  let isDirty = false;
+  let autoSaveTimer = null;
+  let pendingDeleteId = null;
+
+  /* ═══════════════════════════════════════════
+     DOM REFS
+     ═══════════════════════════════════════════ */
+
+  const $ = id => document.getElementById(id);
+  const entryList = $('entryList');
+  const entryDate = $('entryDate');
+  const entryTitle = $('entryTitle');
+  const entryContent = $('entryContent');
+  const statusEl = $('status');
+  const currentDateEl = $('currentDate');
+  const profileFrame = $('profileFrame');
+  const profileUpload = $('profileUpload');
+  const profileImg = $('profileImg');
+  const profilePlaceholder = $('profilePlaceholder');
+  const soundToggle = $('soundToggle');
+  const ringBody = $('ringBody');
+  const gloveToggle = $('gloveToggle');
+  const gloveLabel = gloveToggle.querySelector('.glove-label');
+  const searchBox = $('searchBox');
+  const sortBtn = $('sortBtn');
+  const saveBtn = $('saveBtn');
+  const newBtn = $('newBtn');
+  const moodBtn = $('moodBtn');
+  const moodPicker = $('moodPicker');
+  const delOverlay = $('delOverlay');
+  const delCancel = $('delCancel');
+  const delConfirm = $('delConfirm');
+  const delBtn = $('delBtn');
+  const emptyState = $('emptyState');
+  const saveIndicator = $('saveIndicator');
+  const unsavedDot = $('unsavedDot');
+  const charCount = $('charCount');
+  const ring = document.querySelector('.ring');
+
+  /* ═══════════════════════════════════════════
+     DATE
+     ═══════════════════════════════════════════ */
+
+  currentDateEl.textContent = formatDateFull(todayStr());
+
+  /* ═══════════════════════════════════════════
+     PROFILE
+     ═══════════════════════════════════════════ */
+
+  const savedPfp = localStorage.getItem(PROFILE_KEY);
+  profileImg.src = savedPfp && savedPfp !== 'data:,' ? savedPfp : 'https://cdn.pfpfinder.com/uploads/Hajime-No-Ippo-1702738395754.gif';
+  profileImg.style.display = '';
+  profilePlaceholder.style.display = 'none';
+  profileFrame.addEventListener('click', () => profileUpload.click());
+  profileUpload.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      profileImg.src = ev.target.result;
+      localStorage.setItem(PROFILE_KEY, ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  /* ═══════════════════════════════════════════
+     MOOD SELECTOR
+     ═══════════════════════════════════════════ */
+
+  let currentMood = '\u{1F610}';
+
+  moodBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    moodPicker.classList.toggle('open');
+  });
+
+  document.addEventListener('click', () => moodPicker.classList.remove('open'));
+
+  moodPicker.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    currentMood = btn.dataset.mood;
+    moodBtn.textContent = currentMood;
+    moodPicker.classList.remove('open');
+    markDirty();
+  });
+
+  /* ═══════════════════════════════════════════
+     SEARCH & SORT
+     ═══════════════════════════════════════════ */
+
+  searchBox.addEventListener('input', () => {
+    searchQuery = searchBox.value;
+    renderList();
+  });
+
+  sortBtn.addEventListener('click', () => {
+    sortOrder = sortOrder === 'newest' ? 'oldest' : 'newest';
+    sortBtn.innerHTML = sortOrder === 'newest' ? '\u25B2 Newest' : '\u25BC Oldest';
+    renderList();
+  });
+
+  /* ═══════════════════════════════════════════
+     RENDER LIST
+     ═══════════════════════════════════════════ */
+
+  function renderList() {
+    let filtered = searchEntries(entries, searchQuery);
+    filtered = sortEntries(filtered, sortOrder);
+
+    entryList.innerHTML = '';
+    emptyState.classList.toggle('show', filtered.length === 0);
+
+    for (const e of filtered) {
+      const li = document.createElement('li');
+      if (e.id === currentId) li.classList.add('active');
+
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'entry-title';
+      titleSpan.textContent = e.title || e.content.trim().split('\n')[0] || 'Untitled';
+
+      const meta = document.createElement('span');
+      meta.className = 'entry-meta';
+
+      const moodSpan = document.createElement('span');
+      moodSpan.className = 'entry-mood';
+      moodSpan.textContent = e.mood || '';
+
+      const dateSpan = document.createElement('span');
+      dateSpan.textContent = e.date;
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = '\u00d7';
+      delBtn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        pendingDeleteId = e.id;
+        delOverlay.classList.add('show');
+      });
+
+      meta.appendChild(moodSpan);
+      meta.appendChild(dateSpan);
+      li.appendChild(titleSpan);
+      li.appendChild(meta);
+      li.appendChild(delBtn);
+      li.addEventListener('click', () => selectEntry(e.id));
+      entryList.appendChild(li);
+    }
+  }
+
+  /* ═══════════════════════════════════════════
+     SELECT / LOAD ENTRY
+     ═══════════════════════════════════════════ */
+
+  function selectEntry(id) {
+    if (isDirty) saveCurrentEntrySilent();
+    currentId = id;
+    const e = entries.find(x => x.id === id);
+    if (e) {
+      entryDate.value = e.date;
+      entryTitle.value = e.title || '';
+      entryContent.value = e.content;
+      currentMood = e.mood || '\u{1F610}';
+      moodBtn.textContent = currentMood;
+      charCount.textContent = e.charCount + ' chars';
+      delBtn.style.display = '';
+    }
+    isDirty = false;
+    unsavedDot.classList.remove('dirty');
+    saveIndicator.textContent = '';
+    renderList();
+  }
+
+  /* ═══════════════════════════════════════════
+     SAVE (with auto-save)
+     ═══════════════════════════════════════════ */
+
+  function getCurrentFormData() {
+    return {
+      date: entryDate.value || todayStr(),
+      title: entryTitle.value,
+      content: entryContent.value,
+      mood: currentMood
+    };
+  }
+
+  function saveCurrentEntrySilent() {
+    const data = getCurrentFormData();
+    if (!data.content.trim()) return;
+
+    if (currentId) {
+      const e = entries.find(x => x.id === currentId);
+      if (e) updateEntry(e, data);
+    } else {
+      const entry = createEntry(data);
+      entries.push(entry);
+      currentId = entry.id;
+    }
+    saveEntries(entries);
+    isDirty = false;
+    unsavedDot.classList.remove('dirty');
+    renderList();
+  }
+
+  function saveEntry() {
+    const data = getCurrentFormData();
+    if (!data.content.trim()) {
+      setStatus('Write something before saving!');
+      return;
+    }
+
+    if (currentId) {
+      const e = entries.find(x => x.id === currentId);
+      if (e) updateEntry(e, data);
+    } else {
+      const entry = createEntry(data);
+      entries.push(entry);
+      currentId = entry.id;
+    }
+    saveEntries(entries);
+    isDirty = false;
+    unsavedDot.classList.remove('dirty');
+    renderList();
+    setStatus('Saved!');
+    flashSaved();
+  }
+
+  function flashSaved() {
+    saveIndicator.textContent = 'SAVED';
+    saveIndicator.className = 'save-indicator saved';
+    setTimeout(() => { saveIndicator.textContent = ''; saveIndicator.className = 'save-indicator'; }, 2000);
+  }
+
+  function markDirty() {
+    if (!isDirty) {
+      isDirty = true;
+      unsavedDot.classList.add('dirty');
+    }
+    scheduleAutoSave();
+  }
+
+  function scheduleAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+      if (isDirty && currentId) {
+        saveCurrentEntrySilent();
+        saveIndicator.textContent = 'AUTO';
+        saveIndicator.className = 'save-indicator saving';
+        setTimeout(() => { if (!isDirty) { saveIndicator.textContent = ''; saveIndicator.className = 'save-indicator'; } }, 1500);
+      }
+    }, 2500);
+  }
+
+  /* ═══════════════════════════════════════════
+     NEW ENTRY
+     ═══════════════════════════════════════════ */
+
+  function newEntry() {
+    if (isDirty) saveCurrentEntrySilent();
+    currentId = null;
+    currentMood = '\u{1F610}';
+    entryDate.value = todayStr();
+    entryTitle.value = '';
+    entryContent.value = '';
+    moodBtn.textContent = currentMood;
+    charCount.textContent = '0 chars';
+    isDirty = false;
+    unsavedDot.classList.remove('dirty');
+    saveIndicator.textContent = '';
+    delBtn.style.display = 'none';
+    renderList();
+    entryContent.focus();
+  }
+
+  /* ═══════════════════════════════════════════
+     DELETE
+     ═══════════════════════════════════════════ */
+
+  delCancel.addEventListener('click', () => {
+    delOverlay.classList.remove('show');
+    pendingDeleteId = null;
+  });
+
+  delConfirm.addEventListener('click', () => {
+    if (pendingDeleteId) {
+      entries = deleteEntryById(entries, pendingDeleteId);
+      saveEntries(entries);
+      if (currentId === pendingDeleteId) {
+        if (entries.length > 0) {
+          selectEntry(entries[entries.length - 1].id);
+        } else {
+          currentId = null;
+          entryDate.value = todayStr();
+          entryTitle.value = '';
+          entryContent.value = '';
+          currentMood = '\u{1F610}';
+          moodBtn.textContent = currentMood;
+          charCount.textContent = '0 chars';
+          isDirty = false;
+          unsavedDot.classList.remove('dirty');
+          renderList();
+        }
+      } else {
+        renderList();
+      }
+      setStatus('Entry deleted');
+    }
+    delOverlay.classList.remove('show');
+    pendingDeleteId = null;
+  });
+
+  /* ═══════════════════════════════════════════
+     DIRTY TRACKING
+     ═══════════════════════════════════════════ */
+
+  entryContent.addEventListener('input', () => {
+    markDirty();
+    charCount.textContent = entryContent.value.length + ' chars';
+  });
+  entryTitle.addEventListener('input', markDirty);
+  entryDate.addEventListener('input', markDirty);
+
+  /* ═══════════════════════════════════════════
+     STATUS
+     ═══════════════════════════════════════════ */
+
+  function setStatus(msg) {
+    statusEl.textContent = msg;
+    clearTimeout(statusEl._timer);
+    statusEl._timer = setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  }
+
+  /* ═══════════════════════════════════════════
+     AUDIO (unchanged)
+     ═══════════════════════════════════════════ */
+
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+  function playJab() {
+    if (!soundEnabled) return;
+    try {
+      const ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(150 + Math.random() * 80, t);
+      o.frequency.exponentialRampToValueAtTime(60, t + 0.04);
+      g.gain.setValueAtTime(0.06, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      o.start(t); o.stop(t + 0.05);
+      const n = ctx.createOscillator(), ng = ctx.createGain();
+      n.connect(ng); ng.connect(ctx.destination);
+      n.type = 'triangle';
+      n.frequency.setValueAtTime(2000, t);
+      n.frequency.exponentialRampToValueAtTime(100, t + 0.03);
+      ng.gain.setValueAtTime(0.04, t);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+      n.start(t); n.stop(t + 0.03);
+    } catch {}
+  }
+  function playCross() {
+    if (!soundEnabled) return;
+    try {
+      const ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(120, t);
+      o.frequency.exponentialRampToValueAtTime(40, t + 0.08);
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      o.start(t); o.stop(t + 0.1);
+      const n = ctx.createOscillator(), ng = ctx.createGain();
+      n.connect(ng); ng.connect(ctx.destination);
+      n.type = 'sine';
+      n.frequency.setValueAtTime(3000, t);
+      n.frequency.exponentialRampToValueAtTime(80, t + 0.06);
+      ng.gain.setValueAtTime(0.08, t);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      n.start(t); n.stop(t + 0.06);
+      const l = ctx.createOscillator(), lg = ctx.createGain();
+      l.connect(lg); lg.connect(ctx.destination);
+      l.type = 'sine';
+      l.frequency.setValueAtTime(60, t);
+      lg.gain.setValueAtTime(0.1, t);
+      lg.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      l.start(t); l.stop(t + 0.12);
+    } catch {}
+  }
+  function playWhoosh() {
+    if (!soundEnabled) return;
+    try {
+      const ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(800, t);
+      o.frequency.exponentialRampToValueAtTime(200, t + 0.1);
+      g.gain.setValueAtTime(0.03, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      o.start(t); o.stop(t + 0.1);
+    } catch {}
+  }
+
+  entryContent.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { playCross(); return; }
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) playJab();
+  });
+  entryContent.addEventListener('keyup', e => {
+    if (e.key === 'Backspace' || e.key === 'Delete') playWhoosh();
+  });
+  entryContent.addEventListener('click', () => { try { getAudioCtx().resume(); } catch {} });
+
+  soundToggle.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    soundToggle.textContent = soundEnabled ? '\u{1F50A}' : '\u{1F507}';
+  });
+
+  /* ═══════════════════════════════════════════
+     GLOVE TOGGLE
+     ═══════════════════════════════════════════ */
+
+  let idleTimer = null;
+
+  function clearIdle() {
+    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    gloveToggle.classList.remove('idle');
+  }
+
+  function scheduleIdle() {
+    clearIdle();
+    if (!isUnrolled) {
+      idleTimer = setTimeout(() => { gloveToggle.classList.add('idle'); }, 1800);
+    }
+  }
+
+  function toggleScroll() {
+    if (isAnimating) return;
+    isAnimating = true;
+    clearIdle();
+
+    if (isUnrolled) {
+      if (isDirty) saveCurrentEntrySilent();
+      gloveToggle.classList.add('is-punching');
+      ring.classList.add('screen-shake');
+      playCross();
+
+      setTimeout(() => {
+        ringBody.classList.add('collapsed');
+        gloveLabel.innerHTML = '\u25BC OPEN \u25BC';
+        isUnrolled = false;
+        setTimeout(() => {
+          gloveToggle.classList.remove('is-punching');
+          ring.classList.remove('screen-shake');
+          isAnimating = false;
+          scheduleIdle();
+        }, 120);
+      }, 180);
+    } else {
+      gloveToggle.classList.add('is-opening');
+      setTimeout(() => {
+        ringBody.classList.remove('collapsed');
+        gloveLabel.innerHTML = '\u25B2 CLOSE \u25B2';
+        isUnrolled = true;
+        playJab();
+        setTimeout(() => {
+          gloveToggle.classList.remove('is-opening');
+          isAnimating = false;
+        }, 250);
+      }, 120);
+    }
+  }
+
+  gloveToggle.addEventListener('click', toggleScroll);
+  gloveToggle.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleScroll(); }
+  });
+  document.querySelector('.ring-rope-bottom').addEventListener('click', toggleScroll);
+  document.querySelector('.ring-rope-top').addEventListener('click', toggleScroll);
+
+  /* ═══════════════════════════════════════════
+     KEYBOARD SHORTCUTS
+     ═══════════════════════════════════════════ */
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      saveEntry();
+    }
+    if (e.key === 'Escape') {
+      delOverlay.classList.remove('show');
+      moodPicker.classList.remove('open');
+    }
+  });
+
+  /* ═══════════════════════════════════════════
+     INIT
+     ═══════════════════════════════════════════ */
+
+  saveBtn.addEventListener('click', saveEntry);
+  newBtn.addEventListener('click', newEntry);
+  delBtn.addEventListener('click', () => {
+    if (currentId) {
+      pendingDeleteId = currentId;
+      delOverlay.classList.add('show');
+    }
+  });
+
+  entryDate.value = todayStr();
+  charCount.textContent = '0 chars';
+  renderList();
+})();
+</script>
+</body>
+</html>
