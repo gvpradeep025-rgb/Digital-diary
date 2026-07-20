@@ -2584,6 +2584,8 @@ body::before {
   let musicDB = null;
   let musicLibrary = [];
   let currentTrackIndex = -1;
+  let currentTrackId = null;
+  let currentObjectURL = null;
   let isPlaying = false;
   let musicAudio = null;
   let musicProgressInterval = null;
@@ -2670,6 +2672,22 @@ body::before {
     });
   }
 
+  function dbReplaceAll(store, items) {
+    return new Promise((resolve, reject) => {
+      const tx = musicDB.transaction(store, 'readwrite');
+      const os = tx.objectStore(store);
+      os.clear();
+      for (const item of items) os.put(item);
+      tx.oncomplete = () => resolve();
+      tx.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function syncCurrentIndex() {
+    if (!currentTrackId) { currentTrackIndex = -1; return; }
+    currentTrackIndex = musicLibrary.findIndex(t => t.id === currentTrackId);
+  }
+
   /* ─── Folder Handle Persistence ─── */
 
   async function saveFolderHandle(handle) {
@@ -2723,7 +2741,8 @@ body::before {
           fileName: file.name,
           type: file.type || 'audio/mpeg',
           size: file.size,
-          blob: file
+          blob: file,
+          source: 'folder'
         });
       }
     } catch {}
@@ -2731,8 +2750,8 @@ body::before {
   }
 
   async function syncLibrary(scannedTracks) {
+    const scannedMap = new Map(scannedTracks.map(t => [t.id, t]));
     const existingMap = new Map(musicLibrary.map(t => [t.id, t]));
-    const newMap = new Map(scannedTracks.map(t => [t.id, t]));
 
     for (const track of scannedTracks) {
       if (!existingMap.has(track.id)) {
@@ -2744,44 +2763,51 @@ body::before {
       }
     }
 
-    musicLibrary = musicLibrary.filter(t => newMap.has(t.id));
+    musicLibrary = musicLibrary.filter(t => {
+      if (t.source === 'file') return true;
+      return scannedMap.has(t.id);
+    });
     musicLibrary.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    syncCurrentIndex();
   }
 
   /* ─── File Fallback (non-Chromium browsers) ─── */
 
   async function importFilesFallback(files) {
+    const savedId = currentTrackId;
+
     for (const file of files) {
-      if (!file.type.startsWith('audio/')) continue;
       const ext = '.' + file.name.split('.').pop().toLowerCase();
       if (!AUDIO_EXTS.includes(ext)) continue;
       const id = 'track_' + file.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + file.size;
-      const blob = new Blob([await file.arrayBuffer()], { type: file.type });
-      const track = {
-        id: id,
-        name: file.name.replace(/\.[^.]+$/, ''),
-        fileName: file.name,
-        type: file.type,
-        size: file.size,
-        blob: blob,
-        missing: false
-      };
+      const blob = new Blob([await file.arrayBuffer()], { type: file.type || 'audio/mpeg' });
 
       const existing = musicLibrary.find(t => t.id === id);
       if (existing) {
         existing.blob = blob;
+        existing.fileName = file.name;
+        existing.type = file.type || 'audio/mpeg';
+        existing.size = file.size;
         existing.missing = false;
       } else {
-        musicLibrary.push(track);
+        musicLibrary.push({
+          id: id,
+          name: file.name.replace(/\.[^.]+$/, ''),
+          fileName: file.name,
+          type: file.type || 'audio/mpeg',
+          size: file.size,
+          blob: blob,
+          source: 'file',
+          missing: false
+        });
       }
     }
 
     musicLibrary.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    currentTrackId = savedId;
+    syncCurrentIndex();
 
-    await dbClearStore(MUSIC_STORE);
-    for (const track of musicLibrary) {
-      await dbPut(MUSIC_STORE, track);
-    }
+    await dbReplaceAll(MUSIC_STORE, musicLibrary);
 
     renderPlaylist();
     updateSuggestedTracks();
@@ -2797,6 +2823,15 @@ body::before {
   async function loadLibrary() {
     const savedTracks = await dbGetAll(MUSIC_STORE);
     musicLibrary = savedTracks;
+
+    /* Dedup by ID */
+    const seen = new Set();
+    musicLibrary = musicLibrary.filter(t => {
+      if (!t || !t.id || seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+
     musicLibrary.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     /* Determine folder mode */
@@ -2807,10 +2842,7 @@ body::before {
         updateFolderUI(true);
         const scanned = await scanFolder(folderHandle);
         await syncLibrary(scanned);
-        await dbClearStore(MUSIC_STORE);
-        for (const track of musicLibrary) {
-          await dbPut(MUSIC_STORE, track);
-        }
+        await dbReplaceAll(MUSIC_STORE, musicLibrary);
       } else {
         folderMode = 'none';
         updateFolderUI(false);
@@ -2822,8 +2854,11 @@ body::before {
 
     /* Mark missing tracks */
     for (const track of musicLibrary) {
-      if (!track.blob || !(track.blob instanceof Blob) || track.blob.size === 0) {
+      if (!track.blob || !track.blob.size || track.blob.size === 0) {
         track.missing = true;
+      }
+      if (!track.source) {
+        track.source = folderHandle ? 'folder' : 'file';
       }
     }
 
@@ -2835,11 +2870,18 @@ body::before {
     if (meta.lastVolume !== undefined) {
       musicVolume.value = meta.lastVolume;
     }
-    if (meta.lastTrackIndex >= 0 && meta.lastTrackIndex < musicLibrary.length) {
-      currentTrackIndex = meta.lastTrackIndex;
-      loadTrack(currentTrackIndex, false);
-      if (meta.lastPosition && musicAudio) {
-        musicAudio.currentTime = meta.lastPosition;
+
+    /* Restore last track by ID, not index */
+    const lastId = meta.lastTrackId || null;
+    if (lastId) {
+      const idx = musicLibrary.findIndex(t => t.id === lastId);
+      if (idx >= 0) {
+        currentTrackId = lastId;
+        currentTrackIndex = idx;
+        loadTrack(idx, false);
+        if (meta.lastPosition && musicAudio) {
+          musicAudio.currentTime = meta.lastPosition;
+        }
       }
     }
   }
@@ -2892,12 +2934,7 @@ body::before {
     if (!folderHandle) return;
     const scanned = await scanFolder(folderHandle);
     await syncLibrary(scanned);
-
-    await dbClearStore(MUSIC_STORE);
-    for (const track of musicLibrary) {
-      await dbPut(MUSIC_STORE, track);
-    }
-
+    await dbReplaceAll(MUSIC_STORE, musicLibrary);
     renderPlaylist();
     updateSuggestedTracks();
     updatePlayerUI();
@@ -2921,12 +2958,15 @@ body::before {
         musicTitle.textContent = track.name;
         musicTitle.classList.remove('is-empty');
         if (track.missing) {
-          musicArtist.textContent = 'Track not found. Please re-scan your music folder.';
+          musicArtist.textContent = 'Track not found. Please re-import this file.';
           musicArtist.classList.add('is-empty');
         } else {
           musicArtist.textContent = 'Music Library';
           musicArtist.classList.remove('is-empty');
         }
+      } else if (!isPlaying) {
+        musicPlayPause.innerHTML = '\u25B6;';
+        musicPlayPause.classList.remove('is-playing');
       }
     } else {
       musicProgressWrap.classList.add('disabled');
@@ -2999,6 +3039,10 @@ body::before {
       musicAudio.src = '';
       musicAudio = null;
     }
+    if (currentObjectURL) {
+      URL.revokeObjectURL(currentObjectURL);
+      currentObjectURL = null;
+    }
     isPlaying = false;
     clearInterval(musicProgressInterval);
     musicPlayPause.innerHTML = '\u25B6;';
@@ -3012,21 +3056,22 @@ body::before {
     stopPlayback();
     currentTrackIndex = index;
     const track = musicLibrary[index];
+    currentTrackId = track.id;
 
     musicTitle.textContent = track.name;
     musicTitle.classList.remove('is-empty');
 
     if (track.missing) {
-      musicArtist.textContent = 'Track not found. Please re-scan your music folder.';
+      musicArtist.textContent = 'Track not found. Please re-import this file.';
       musicArtist.classList.add('is-empty');
       renderPlaylist();
-      saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
+      saveMusicMeta({ ...getMusicMeta(), lastTrackId: currentTrackId });
       return;
     }
 
     try {
-      const url = URL.createObjectURL(track.blob);
-      musicAudio = new Audio(url);
+      currentObjectURL = URL.createObjectURL(track.blob);
+      musicAudio = new Audio(currentObjectURL);
       musicAudio.volume = musicVolume.value / 100;
 
       musicAudio.addEventListener('loadedmetadata', () => {
@@ -3036,21 +3081,15 @@ body::before {
       });
 
       musicAudio.addEventListener('ended', () => {
-        if (currentTrackIndex < musicLibrary.length - 1) {
-          playTrackAtIndex(currentTrackIndex + 1);
-        } else {
-          stopPlayback();
-          currentTrackIndex = 0;
-          renderPlaylist();
-          saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
-        }
+        nextTrack();
       });
 
       musicAudio.addEventListener('error', () => {
         track.missing = true;
-        musicArtist.textContent = 'Track not found. Please re-scan your music folder.';
+        musicArtist.textContent = 'Track not found. Please re-import this file.';
         musicArtist.classList.add('is-empty');
         renderPlaylist();
+        saveMusicMeta({ ...getMusicMeta(), lastTrackId: currentTrackId });
       });
 
       if (autoPlay) {
@@ -3063,13 +3102,13 @@ body::before {
       }
     } catch {
       track.missing = true;
-      musicArtist.textContent = 'Track not found. Please re-scan your music folder.';
+      musicArtist.textContent = 'Track not found. Please re-import this file.';
       musicArtist.classList.add('is-empty');
       renderPlaylist();
     }
 
     renderPlaylist();
-    saveMusicMeta({ ...getMusicMeta(), lastTrackIndex: currentTrackIndex });
+    saveMusicMeta({ ...getMusicMeta(), lastTrackId: currentTrackId });
   }
 
   function playTrackAtIndex(index) {
@@ -3113,7 +3152,7 @@ body::before {
       const pct = (musicAudio.currentTime / musicAudio.duration) * 100;
       musicProgressFill.style.width = pct + '%';
       musicCurrentTime.textContent = formatTime(musicAudio.currentTime);
-      saveMusicMeta({ ...getMusicMeta(), lastPosition: musicAudio.currentTime, lastVolume: musicVolume.value });
+      saveMusicMeta({ ...getMusicMeta(), lastTrackId: currentTrackId, lastPosition: musicAudio.currentTime, lastVolume: musicVolume.value });
     }, 250);
   }
 
@@ -3187,7 +3226,8 @@ body::before {
     folderMode = canUseFolder ? 'none' : 'files';
     musicLibrary = [];
     currentTrackIndex = -1;
-    saveMusicMeta({ lastTrackIndex: -1, lastPosition: 0, lastVolume: musicVolume.value });
+    currentTrackId = null;
+    saveMusicMeta({ lastTrackId: null, lastPosition: 0, lastVolume: musicVolume.value });
     updateFolderUI(false);
     renderPlaylist();
     updatePlayerUI();
